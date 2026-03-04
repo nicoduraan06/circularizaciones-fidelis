@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Envío en progreso</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block content %}
 
 <h1>Circularización en progreso</h1>
 
@@ -52,5 +48,4 @@ setInterval(actualizarProgreso, 1000)
 
 </script>
 
-</body>
-</html>
+{% endblock %}

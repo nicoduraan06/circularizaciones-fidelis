@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Circularizaciones Grupo Fidelis</title>
-    <p>
-    Usuario conectado: <b>{{ request.session.get("user") }}</b>
-    </p>
+{% extends "base.html" %}
 
-    <a href="/logout">Cerrar sesión</a>
+{% block content %}
 
-    <hr>
-</head>
-
-<body>
-
-<h1>Sistema de Circularizaciones</h1>
+<h1>Nueva circularización</h1>
 
 <form action="/enviar" method="post" enctype="multipart/form-data">
 
@@ -28,12 +17,12 @@
 </p>
 
 <p>
-<label>Asunto del correo:</label><br>
+<label>Asunto:</label><br>
 <input type="text" name="asunto">
 </p>
 
 <p>
-<label>Cuerpo del mensaje:</label><br>
+<label>Mensaje:</label><br>
 <textarea name="mensaje" rows="6" cols="60"></textarea>
 </p>
 
@@ -41,9 +30,4 @@
 
 </form>
 
-<br><br>
-
-<a href="/historial">Ver historial de circularizaciones</a>
-
-</body>
-</html>
+{% endblock %}

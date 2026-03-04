@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Circularizaciones Fidelis</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            margin:0;
+        }
+
+        .sidebar{
+            width:220px;
+            background:#2c3e50;
+            color:white;
+            position:fixed;
+            height:100%;
+            padding:20px;
+        }
+
+        .sidebar a{
+            display:block;
+            color:white;
+            text-decoration:none;
+            padding:10px 0;
+        }
+
+        .sidebar a:hover{
+            background:#34495e;
+        }
+
+        .content{
+            margin-left:240px;
+            padding:30px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h2>Fidelis</h2>
+
+<p>Usuario: {{ request.session.get("user") }}</p>
+
+<hr>
+
+<a href="/">Nueva circularización</a>
+<a href="/dashboard">Dashboard</a>
+<a href="/historial">Historial</a>
+<a href="/errores">Errores</a>
+<a href="/usuarios">Usuarios</a>
+<a href="/admin">Admin</a>
+
+<hr>
+
+<a href="/logout">Cerrar sesión</a>
+
+</div>
+
+<div class="content">
+
+{% block content %}
+
+{% endblock %}
+
+</div>
+
+</body>
+
+</html>

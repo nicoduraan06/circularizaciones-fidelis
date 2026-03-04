@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Panel de Administración</title>
-</head>
+{% extends "base.html" %}
 
-<body>
+{% block content %}
 
 <h1>Panel de Administración - Circularizaciones</h1>
 
@@ -39,17 +35,4 @@
 
 </table>
 
-<br>
-
-<h2>Acciones</h2>
-
-<a href="/">Nueva circularización</a><br><br>
-
-<a href="/historial">Ver historial completo</a><br><br>
-
-<a href="/errores">Ver errores de envío</a><br><br>
-
-<a href="/dashboard">Ver estadísticas detalladas</a>
-
-</body>
-</html>
+{% endblock %}
