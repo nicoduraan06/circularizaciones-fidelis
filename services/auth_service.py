@@ -1,19 +1,26 @@
-USUARIOS = {
-    "nicolas": {
-        "password": "1234",
-        "email": "nicolasdu2006@gmail.com"
-    }
-}
+import json
+
+USERS_FILE = "config/users.json"
+
+
+def cargar_usuarios():
+
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
 
 
 def autenticar_usuario(username, password):
 
-    usuario = USUARIOS.get(username)
+    usuarios = cargar_usuarios()
 
-    if not usuario:
-        return None
+    if username in usuarios:
 
-    if usuario["password"] != password:
-        return None
+        usuario = usuarios[username]
 
-    return usuario
+        if usuario["password"] == password:
+            return usuario
+
+    return None
