@@ -46,9 +46,27 @@
 <textarea name="mensaje" rows="6" cols="60"></textarea>
 </p>
 
-<button type="submit">Enviar circularización</button>
+<button type="button" onclick="confirmarEnvio()">Enviar circularización</button>
 
 </form>
+
+<div id="confirmModal" class="modal">
+
+<div class="modal-content">
+
+<h3>Confirmar envío</h3>
+
+<p id="confirmDestinatarios"></p>
+<p id="confirmPDFs"></p>
+
+<br>
+
+<button onclick="enviarFormulario()">Confirmar envío</button>
+<button onclick="cerrarModal()">Cancelar</button>
+
+</div>
+
+</div>
 
 
 <style>
@@ -77,6 +95,24 @@ padding:5px;
 margin:5px 0;
 }
 
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+justify-content:center;
+align-items:center;
+}
+
+.modal-content{
+background:white;
+padding:30px;
+border-radius:8px;
+text-align:center;
+}
 </style>
 
 
@@ -258,6 +294,31 @@ document.getElementById("excelInfo").innerText =
 
 setupDropZone("excelDrop","excelList")
 setupDropZone("pdfDrop","pdfList")
+
+function confirmarEnvio(){
+
+const destinatarios = document.getElementById("excelInfo").innerText || "Destinatarios no detectados"
+
+const totalPDF = pdfFiles.length
+
+document.getElementById("confirmDestinatarios").innerText = destinatarios
+document.getElementById("confirmPDFs").innerText = "PDFs cargados: " + totalPDF
+
+document.getElementById("confirmModal").style.display="flex"
+
+}
+
+function cerrarModal(){
+
+document.getElementById("confirmModal").style.display="none"
+
+}
+
+function enviarFormulario(){
+
+document.querySelector("form").submit()
+
+}
 
 </script>
 
