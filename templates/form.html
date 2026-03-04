@@ -15,6 +15,8 @@
 
 <ul id="excelList"></ul>
 
+<p id="excelInfo" style="font-weight:bold;"></p>
+
 <button type="button" onclick="clearExcel()">Limpiar Excel</button>
 
 <br><br>
@@ -104,10 +106,20 @@ input.files = e.dataTransfer.files
 
 updateFileList(list, input.files)
 
+if(zoneId==="excelDrop" && input.files.length>0){
+analizarExcel(input.files[0])
+}
+
 })
 
 input.addEventListener("change", ()=>{
+
 updateFileList(list, input.files)
+
+if(zoneId==="excelDrop" && input.files.length>0){
+analizarExcel(input.files[0])
+}
+
 })
 
 }
@@ -134,6 +146,8 @@ const list=document.getElementById("excelList")
 input.value=""
 list.innerHTML=""
 
+document.getElementById("excelInfo").innerText=""
+
 }
 
 function clearPDFs(){
@@ -143,6 +157,23 @@ const list=document.getElementById("pdfList")
 
 input.value=""
 list.innerHTML=""
+
+}
+
+async function analizarExcel(file){
+
+const formData = new FormData()
+formData.append("excel_file", file)
+
+const response = await fetch("/analizar_excel",{
+method:"POST",
+body:formData
+})
+
+const data = await response.json()
+
+document.getElementById("excelInfo").innerText =
+"Destinatarios detectados: " + data.total_destinatarios
 
 }
 

@@ -260,3 +260,17 @@ async def eliminar_usuario_endpoint(
     eliminar_usuario(username)
 
     return RedirectResponse("/usuarios", status_code=302)
+
+@app.post("/analizar_excel")
+async def analizar_excel(excel_file: UploadFile = File(...)):
+
+    temp_path = os.path.join("uploads", excel_file.filename)
+
+    with open(temp_path, "wb") as f:
+        f.write(await excel_file.read())
+
+    destinatarios = leer_excel(temp_path)
+
+    return {
+        "total_destinatarios": len(destinatarios)
+    }
