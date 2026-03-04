@@ -6,19 +6,31 @@
 
 <form action="/enviar" method="post" enctype="multipart/form-data">
 
+<h3>Excel</h3>
+
 <div class="drop-zone" id="excelDrop">
-<p>Arrastra aquí el Excel</p>
+<p>Arrastra aquí el Excel o haz click</p>
 <input type="file" name="excel_file" accept=".xlsx" hidden>
 </div>
 
-<br>
+<ul id="excelList"></ul>
+
+<button type="button" onclick="clearExcel()">Limpiar Excel</button>
+
+<br><br>
+
+<h3>PDFs</h3>
 
 <div class="drop-zone" id="pdfDrop">
-<p>Arrastra aquí los PDFs</p>
+<p>Arrastra aquí los PDFs o haz click</p>
 <input type="file" name="pdf_files" multiple accept=".pdf" hidden>
 </div>
 
-<br>
+<ul id="pdfList"></ul>
+
+<button type="button" onclick="clearPDFs()">Limpiar PDFs</button>
+
+<br><br>
 
 <p>
 <label>Asunto:</label><br>
@@ -34,6 +46,7 @@
 
 </form>
 
+
 <style>
 
 .drop-zone{
@@ -41,6 +54,7 @@ border:2px dashed #aaa;
 padding:40px;
 text-align:center;
 cursor:pointer;
+margin-bottom:10px;
 }
 
 .drop-zone.dragover{
@@ -48,14 +62,27 @@ background:#f0f8ff;
 border-color:#007bff;
 }
 
+ul{
+list-style:none;
+padding:0;
+}
+
+li{
+background:#f5f5f5;
+padding:5px;
+margin:5px 0;
+}
+
 </style>
+
 
 <script>
 
-function setupDropZone(zoneId){
+function setupDropZone(zoneId, listId){
 
 const zone = document.getElementById(zoneId)
 const input = zone.querySelector("input")
+const list = document.getElementById(listId)
 
 zone.addEventListener("click", () => input.click())
 
@@ -75,15 +102,52 @@ zone.classList.remove("dragover")
 
 input.files = e.dataTransfer.files
 
-zone.querySelector("p").innerText =
-e.dataTransfer.files.length + " archivo(s) seleccionados"
+updateFileList(list, input.files)
 
+})
+
+input.addEventListener("change", ()=>{
+updateFileList(list, input.files)
 })
 
 }
 
-setupDropZone("excelDrop")
-setupDropZone("pdfDrop")
+function updateFileList(list, files){
+
+list.innerHTML=""
+
+for(let i=0;i<files.length;i++){
+
+const li=document.createElement("li")
+li.innerText=files[i].name
+list.appendChild(li)
+
+}
+
+}
+
+function clearExcel(){
+
+const input=document.querySelector("#excelDrop input")
+const list=document.getElementById("excelList")
+
+input.value=""
+list.innerHTML=""
+
+}
+
+function clearPDFs(){
+
+const input=document.querySelector("#pdfDrop input")
+const list=document.getElementById("pdfList")
+
+input.value=""
+list.innerHTML=""
+
+}
+
+setupDropZone("excelDrop","excelList")
+setupDropZone("pdfDrop","pdfList")
 
 </script>
 
