@@ -11,6 +11,7 @@ from services.error_reader_service import leer_errores
 from services.retry_service import reintentar_error
 from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
+from services.user_service import obtener_usuarios, crear_usuario, eliminar_usuario
 import os
 
 app = FastAPI()
@@ -220,3 +221,38 @@ def logout(request: Request):
     request.session.clear()
 
     return RedirectResponse("/login", status_code=302)
+
+@app.get("/usuarios", response_class=HTMLResponse)
+def ver_usuarios(request: Request):
+
+    usuarios = obtener_usuarios()
+
+    return templates.TemplateResponse(
+        "usuarios.html",
+        {
+            "request": request,
+            "usuarios": usuarios
+        }
+    )
+
+
+@app.post("/crear_usuario")
+async def crear_usuario_endpoint(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(...)
+):
+
+    crear_usuario(username, password, email)
+
+    return RedirectResponse("/usuarios", status_code=302)
+
+
+@app.post("/eliminar_usuario")
+async def eliminar_usuario_endpoint(
+    username: str = Form(...)
+):
+
+    eliminar_usuario(username)
+
+    return RedirectResponse("/usuarios", status_code=302)

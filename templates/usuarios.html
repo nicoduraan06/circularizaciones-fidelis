@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Gestión de Usuarios</title>
+</head>
+
+<body>
+
+<h1>Usuarios del sistema</h1>
+
+<table border="1">
+
+<tr>
+<th>Usuario</th>
+<th>Email</th>
+<th>Acción</th>
+</tr>
+
+{% for username, data in usuarios.items() %}
+
+<tr>
+<td>{{ username }}</td>
+<td>{{ data.email }}</td>
+
+<td>
+
+<form action="/eliminar_usuario" method="post">
+<input type="hidden" name="username" value="{{ username }}">
+<button type="submit">Eliminar</button>
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<h2>Crear nuevo usuario</h2>
+
+<form action="/crear_usuario" method="post">
+
+<p>Usuario</p>
+<input type="text" name="username">
+
+<p>Password</p>
+<input type="text" name="password">
+
+<p>Email</p>
+<input type="email" name="email">
+
+<br><br>
+
+<button type="submit">Crear usuario</button>
+
+</form>
+
+</body>
+</html>
