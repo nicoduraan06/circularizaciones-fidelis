@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
+from services.progress_service import obtener_progreso
 import os
 
 app = FastAPI()
@@ -113,3 +114,7 @@ async def enviar_circularizacion(
             "total_destinatarios": len(destinatarios)
         }
     )
+@app.get("/progreso")
+def progreso():
+
+    return obtener_progreso()

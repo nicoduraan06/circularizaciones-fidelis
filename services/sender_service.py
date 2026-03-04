@@ -1,11 +1,23 @@
-from app.mailer import enviar_correo
 import os
+from app.mailer import enviar_correo
+from services.progress_service import iniciar_progreso, incrementar_enviados
 
 UPLOAD_FOLDER = "uploads"
 
-def procesar_circularizacion(destinatarios, email_remitente, password, asunto, mensaje):
+
+def procesar_circularizacion(
+        destinatarios,
+        email_remitente,
+        password,
+        asunto,
+        mensaje
+):
 
     print("===== INICIO ENVÍO DE CIRCULARIZACIÓN =====")
+
+    total = len(destinatarios)
+
+    iniciar_progreso(total)
 
     for d in destinatarios:
 
@@ -39,7 +51,12 @@ def procesar_circularizacion(destinatarios, email_remitente, password, asunto, m
 
             print(f"Correo enviado correctamente a {email_destino}")
 
+            incrementar_enviados()
+
         except Exception as e:
+
             print(f"❌ Error enviando a {email_destino}: {e}")
+
+            incrementar_enviados()
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
