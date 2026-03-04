@@ -1,4 +1,5 @@
 import os
+import time
 from app.mailer import enviar_correo
 from services.progress_service import iniciar_progreso, incrementar_enviados
 from services.error_logger_service import registrar_error
@@ -54,7 +55,6 @@ def procesar_circularizacion(
 
             incrementar_enviados()
 
-
         except Exception as e:
 
             print(f"❌ Error enviando a {email_destino}: {e}")
@@ -62,5 +62,8 @@ def procesar_circularizacion(
             registrar_error(email_destino, e)
 
             incrementar_enviados()
+
+        # Control de velocidad de envío (evita bloqueos SMTP)
+        time.sleep(1)
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
