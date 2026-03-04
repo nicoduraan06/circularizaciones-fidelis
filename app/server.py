@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
 from services.progress_service import obtener_progreso
+from services.error_reader_service import leer_errores
 import os
 
 app = FastAPI()
@@ -118,3 +119,16 @@ async def enviar_circularizacion(
 def progreso():
 
     return obtener_progreso()
+
+@app.get("/errores", response_class=HTMLResponse)
+def ver_errores(request: Request):
+
+    errores = leer_errores()
+
+    return templates.TemplateResponse(
+        "errores.html",
+        {
+            "request": request,
+            "errores": errores
+        }
+    )
