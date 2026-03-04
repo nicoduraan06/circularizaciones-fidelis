@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel de Circularizaciones</title>
+</head>
+
+<body>
+
+<h1>Panel de Circularizaciones</h1>
+
+<h2>Estadísticas</h2>
+
+<p><b>Total de circularizaciones:</b> {{ total_circularizaciones }}</p>
+
+<p><b>Total de destinatarios enviados:</b> {{ total_destinatarios }}</p>
+
+<h2>Últimas circularizaciones</h2>
+
+<table border="1">
+
+<tr>
+<th>Fecha</th>
+<th>Excel</th>
+<th>Remitente</th>
+<th>Destinatarios</th>
+</tr>
+
+{% for r in ultimos %}
+
+<tr>
+<td>{{ r.fecha }}</td>
+<td>{{ r.excel }}</td>
+<td>{{ r.correo }}</td>
+<td>{{ r.destinatarios }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/">Volver al formulario</a>
+
+</body>
+</html>

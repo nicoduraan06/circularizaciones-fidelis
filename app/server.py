@@ -1,5 +1,6 @@
 from services.logger_service import registrar_circularizacion
 from services.log_reader_service import leer_historial
+from services.stats_service import obtener_estadisticas
 from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -29,6 +30,22 @@ def historial(request: Request):
         {
             "request": request,
             "registros": registros
+        }
+    )
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard(request: Request):
+
+    stats = obtener_estadisticas()
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "total_circularizaciones": stats["total_circularizaciones"],
+            "total_destinatarios": stats["total_destinatarios"],
+            "ultimos": stats["ultimos"]
         }
     )
 
