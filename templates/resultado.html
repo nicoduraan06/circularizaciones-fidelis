@@ -4,6 +4,8 @@
 
 <h1>Circularización en progreso</h1>
 
+<div id="progresoContainer">
+
 <p id="contador">Preparando envío...</p>
 
 <div style="width:400px;border:1px solid black;height:30px">
@@ -14,9 +16,17 @@
 
 </div>
 
+</div>
+
+<div id="finalizado" style="display:none; text-align:center;">
+
+<h2>✅ Circularización enviada con éxito</h2>
+
 <br>
 
 <a href="/">Volver al inicio</a>
+
+</div>
 
 <script>
 
@@ -39,6 +49,14 @@ function actualizarProgreso(){
 
         document.getElementById("contador").innerText =
             enviados + " / " + total + " correos enviados"
+
+        if(enviados >= total){
+
+            document.getElementById("progresoContainer").style.display = "none"
+
+            document.getElementById("finalizado").style.display = "block"
+
+        }
 
     })
 
