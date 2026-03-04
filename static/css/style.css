@@ -11,21 +11,22 @@ padding:40px;
 }
 
 h1{
-color:#2c3e50;
+color:#5b2c83;
 margin-bottom:20px;
 }
 
 button{
-background:#007bff;
+background:#5b2c83;
 border:none;
 color:white;
 padding:10px 18px;
-border-radius:5px;
+border-radius:6px;
 cursor:pointer;
+transition:0.2s;
 }
 
 button:hover{
-background:#0056b3;
+background:#4a236b;
 }
 
 input, textarea{
@@ -58,12 +59,12 @@ text-align:left;
 }
 
 th{
-background:#f1f1f1;
+background:#f3edf8;
 }
 
 .sidebar{
-width:220px;
-background:#2c3e50;
+width:230px;
+background:#5b2c83;
 position:fixed;
 height:100%;
 padding-top:20px;
@@ -74,13 +75,39 @@ display:block;
 color:white;
 padding:12px 20px;
 text-decoration:none;
+font-weight:500;
 }
 
 .sidebar a:hover{
-background:#34495e;
+background:#4a236b;
 }
 
 .content{
 margin-left:240px;
 padding:30px;
+}
+
+/* contenedor del logo */
+
+.logo-container{
+background:white;
+margin:10px 20px 25px 20px;
+padding:10px;
+border-radius:8px;
+text-align:center;
+}
+
+/* logo */
+
+.logo-container img{
+width:140px;
+}
+
+/* Usuario sidebar */
+
+.usuario{
+color:white;
+text-align:center;
+font-size:14px;
+margin-bottom:20px;
 }

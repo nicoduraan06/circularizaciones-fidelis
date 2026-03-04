@@ -12,10 +12,12 @@
 
 <div class="sidebar">
 
-<h2 style="color:white;padding-left:20px;">Fidelis</h2>
+<div class="logo-container">
+<img src="/static/images/logo-fidelis.png" alt="Grupo Fidelis">
+</div>
 
-    {% if request.session.user %}
-<p style="color:white;padding-left:20px;font-size:14px;">
+{% if request.session.user %}
+<p class="usuario">
 Usuario: {{ request.session.user }}
 </p>
 {% endif %}
@@ -24,9 +26,11 @@ Usuario: {{ request.session.user }}
 <a href="/dashboard">Estadísticas</a>
 <a href="/historial">Historial</a>
 <a href="/errores">Errores</a>
+
 {% if request.session.role == "admin" %}
 <a href="/admin">Administración</a>
 {% endif %}
+
 <a href="/logout">Cerrar sesión</a>
 
 </div>

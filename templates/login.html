@@ -6,8 +6,12 @@
 
 <div class="login-card">
 
-<h2>Grupo Fidelis</h2>
-<p class="login-subtitle">Sistema de Circularizaciones</p>
+<div class="login-logo">
+<img src="/static/images/logo-fidelis.png" alt="Grupo Fidelis">
+</div>
+
+<h2>Sistema de Circularizaciones</h2>
+<p class="login-subtitle">Grupo Fidelis</p>
 
 <form method="post" action="/login">
 
@@ -43,9 +47,14 @@ width:350px;
 text-align:center;
 }
 
+.login-logo img{
+width:180px;
+margin-bottom:20px;
+}
+
 .login-card h2{
 margin-bottom:5px;
-color:#2c3e50;
+color:#5b2c83;
 }
 
 .login-subtitle{
@@ -64,7 +73,7 @@ border-radius:5px;
 .login-card button{
 width:100%;
 padding:10px;
-background:#007bff;
+background:#5b2c83;
 border:none;
 color:white;
 border-radius:5px;
@@ -72,7 +81,7 @@ cursor:pointer;
 }
 
 .login-card button:hover{
-background:#0056b3;
+background:#4a236b;
 }
 
 </style>
