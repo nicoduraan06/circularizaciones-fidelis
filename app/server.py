@@ -2,25 +2,38 @@ from services.logger_service import registrar_circularizacion
 from services.log_reader_service import leer_historial
 from services.stats_service import obtener_estadisticas
 from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
 from services.progress_service import obtener_progreso
 from services.error_reader_service import leer_errores
 from services.retry_service import reintentar_error
-from services.stats_service import obtener_estadisticas
+from starlette.middleware.sessions import SessionMiddleware
+from services.auth_service import autenticar_usuario
 import os
 
 app = FastAPI()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="clave-super-secreta"
+)
 
 templates = Jinja2Templates(directory="templates")
 
 UPLOAD_FOLDER = "uploads"
 
+# contraseña SMTP del sistema (la que ya usabas)
+SMTP_PASSWORD = "pdozlfkifknatdxb"
+
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
+
+    if "user" not in request.session:
+        return RedirectResponse("/login")
+
     return templates.TemplateResponse("form.html", {"request": request})
 
 
@@ -61,12 +74,15 @@ async def enviar_circularizacion(
     excel_file: UploadFile = File(...),
     pdf_files: list[UploadFile] = File(...),
     asunto: str = Form(...),
-    mensaje: str = Form(...),
-    email_remitente: str = Form(...),
-    password: str = Form(...)
+    mensaje: str = Form(...)
 ):
 
-    # guardar Excel
+    if "user" not in request.session:
+        return RedirectResponse("/login")
+
+    email_remitente = request.session.get("email")
+    password = SMTP_PASSWORD
+
     excel_path = os.path.join(UPLOAD_FOLDER, excel_file.filename)
 
     with open(excel_path, "wb") as f:
@@ -74,7 +90,6 @@ async def enviar_circularizacion(
 
     print(f"Excel guardado en: {excel_path}")
 
-    # guardar PDFs
     pdf_paths = []
 
     for pdf in pdf_files:
@@ -88,7 +103,6 @@ async def enviar_circularizacion(
 
         print(f"PDF guardado: {pdf_path}")
 
-    # leer Excel
     destinatarios = leer_excel(excel_path)
 
     registrar_circularizacion(
@@ -100,7 +114,6 @@ async def enviar_circularizacion(
     print("DESTINATARIOS DETECTADOS:")
     print(destinatarios)
 
-    # ejecutar envío en segundo plano
     background_tasks.add_task(
         procesar_circularizacion,
         destinatarios,
@@ -117,10 +130,12 @@ async def enviar_circularizacion(
             "total_destinatarios": len(destinatarios)
         }
     )
+
+
 @app.get("/progreso")
 def progreso():
-
     return obtener_progreso()
+
 
 @app.get("/errores", response_class=HTMLResponse)
 def ver_errores(request: Request):
@@ -134,6 +149,7 @@ def ver_errores(request: Request):
             "errores": errores
         }
     )
+
 
 @app.post("/reintentar")
 async def reintentar_envio(
@@ -152,9 +168,8 @@ async def reintentar_envio(
         mensaje
     )
 
-    return {
-        "resultado": resultado
-    }
+    return {"resultado": resultado}
+
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_panel(request: Request):
@@ -168,3 +183,30 @@ def admin_panel(request: Request):
             "stats": stats
         }
     )
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request):
+
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request}
+    )
+
+
+@app.post("/login")
+async def login(
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...)
+):
+
+    usuario = autenticar_usuario(username, password)
+
+    if not usuario:
+        return {"error": "Credenciales incorrectas"}
+
+    request.session["user"] = username
+    request.session["email"] = usuario["email"]
+
+    return RedirectResponse("/", status_code=302)
