@@ -1,3 +1,4 @@
+from services.logger_service import registrar_circularizacion
 from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -53,6 +54,11 @@ async def enviar_circularizacion(
 
     # leer Excel
     destinatarios = leer_excel(excel_path)
+
+    registrar_circularizacion(
+        excel_file.filename,
+        len(destinatarios)
+    )
 
     print("DESTINATARIOS DETECTADOS:")
     print(destinatarios)
