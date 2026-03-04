@@ -174,6 +174,9 @@ async def reintentar_envio(
 @app.get("/admin", response_class=HTMLResponse)
 def admin_panel(request: Request):
 
+    if "user" not in request.session:
+        return RedirectResponse("/login")
+
     stats = obtener_estadisticas()
 
     return templates.TemplateResponse(
@@ -210,3 +213,10 @@ async def login(
     request.session["email"] = usuario["email"]
 
     return RedirectResponse("/", status_code=302)
+
+@app.get("/logout")
+def logout(request: Request):
+
+    request.session.clear()
+
+    return RedirectResponse("/login", status_code=302)

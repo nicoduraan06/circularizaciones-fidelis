@@ -2,6 +2,13 @@
 <html>
 <head>
     <title>Circularizaciones Grupo Fidelis</title>
+    <p>
+    Usuario conectado: <b>{{ request.session.get("user") }}</b>
+    </p>
+
+    <a href="/logout">Cerrar sesión</a>
+
+    <hr>
 </head>
 
 <body>
