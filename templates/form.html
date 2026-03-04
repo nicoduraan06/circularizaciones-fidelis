@@ -30,6 +30,8 @@
 
 <ul id="pdfList"></ul>
 
+<p id="pdfInfo" style="font-weight:bold;"></p>
+
 <button type="button" onclick="clearPDFs()">Limpiar PDFs</button>
 
 <br><br>
@@ -80,6 +82,8 @@ margin:5px 0;
 
 <script>
 
+let pdfFiles = []
+
 function setupDropZone(zoneId, listId){
 
 const zone = document.getElementById(zoneId)
@@ -102,25 +106,66 @@ zone.addEventListener("drop",(e)=>{
 e.preventDefault()
 zone.classList.remove("dragover")
 
-input.files = e.dataTransfer.files
+if(zoneId==="pdfDrop"){
 
+addPdfFiles(e.dataTransfer.files)
+
+}else{
+
+input.files = e.dataTransfer.files
 updateFileList(list, input.files)
 
-if(zoneId==="excelDrop" && input.files.length>0){
+if(input.files.length>0){
 analizarExcel(input.files[0])
+}
+
 }
 
 })
 
 input.addEventListener("change", ()=>{
 
+if(zoneId==="pdfDrop"){
+
+addPdfFiles(input.files)
+
+}else{
+
 updateFileList(list, input.files)
 
-if(zoneId==="excelDrop" && input.files.length>0){
+if(input.files.length>0){
 analizarExcel(input.files[0])
 }
 
+}
+
 })
+
+}
+
+function addPdfFiles(files){
+
+for(const file of files){
+pdfFiles.push(file)
+}
+
+updatePdfInput()
+updateFileList(document.getElementById("pdfList"), pdfFiles)
+
+}
+
+function updatePdfInput(){
+
+const input = document.querySelector("#pdfDrop input")
+
+const dataTransfer = new DataTransfer()
+
+pdfFiles.forEach(file => dataTransfer.items.add(file))
+
+input.files = dataTransfer.files
+
+document.getElementById("pdfInfo").innerText =
+"PDFs cargados: " + pdfFiles.length
 
 }
 
@@ -152,11 +197,15 @@ document.getElementById("excelInfo").innerText=""
 
 function clearPDFs(){
 
+pdfFiles = []
+
 const input=document.querySelector("#pdfDrop input")
 const list=document.getElementById("pdfList")
 
 input.value=""
 list.innerHTML=""
+
+document.getElementById("pdfInfo").innerText=""
 
 }
 
