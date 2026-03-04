@@ -1,6 +1,7 @@
 import os
 from app.mailer import enviar_correo
 from services.progress_service import iniciar_progreso, incrementar_enviados
+from services.error_logger_service import registrar_error
 
 UPLOAD_FOLDER = "uploads"
 
@@ -53,9 +54,12 @@ def procesar_circularizacion(
 
             incrementar_enviados()
 
+
         except Exception as e:
 
             print(f"❌ Error enviando a {email_destino}: {e}")
+
+            registrar_error(email_destino, e)
 
             incrementar_enviados()
 
