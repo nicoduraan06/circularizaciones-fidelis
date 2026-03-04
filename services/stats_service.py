@@ -15,7 +15,16 @@ def obtener_estadisticas():
         except:
             pass
 
-    ultimos = registros[-5:][::-1]
+    ultimos = []
+
+    for r in registros[-5:][::-1]:
+
+        ultimos.append({
+            "fecha": r.get("fecha", ""),
+            "excel": r.get("excel", ""),
+            "remitente": r.get("correo", ""),  # ← AQUÍ ESTÁ LA CLAVE
+            "destinatarios": r.get("destinatarios", "")
+        })
 
     return {
         "total_circularizaciones": total_circularizaciones,

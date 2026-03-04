@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel de Administración</title>
+</head>
+
+<body>
+
+<h1>Panel de Administración - Circularizaciones</h1>
+
+<h2>Estadísticas</h2>
+
+<p>Total circularizaciones: {{ stats.total_circularizaciones }}</p>
+<p>Total destinatarios enviados: {{ stats.total_destinatarios }}</p>
+
+<hr>
+
+<h2>Últimas circularizaciones</h2>
+
+<table border="1">
+
+<tr>
+    <th>Fecha</th>
+    <th>Excel</th>
+    <th>Remitente</th>
+    <th>Destinatarios</th>
+</tr>
+
+{% for r in stats.ultimos %}
+
+<tr>
+    <td>{{ r.fecha }}</td>
+    <td>{{ r.excel }}</td>
+    <td>{{ r.remitente }}</td>
+    <td>{{ r.destinatarios }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<h2>Acciones</h2>
+
+<a href="/">Nueva circularización</a><br><br>
+
+<a href="/historial">Ver historial completo</a><br><br>
+
+<a href="/errores">Ver errores de envío</a><br><br>
+
+<a href="/dashboard">Ver estadísticas detalladas</a>
+
+</body>
+</html>

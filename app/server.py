@@ -9,6 +9,7 @@ from app.excel_reader import leer_excel
 from services.progress_service import obtener_progreso
 from services.error_reader_service import leer_errores
 from services.retry_service import reintentar_error
+from services.stats_service import obtener_estadisticas
 import os
 
 app = FastAPI()
@@ -154,3 +155,16 @@ async def reintentar_envio(
     return {
         "resultado": resultado
     }
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_panel(request: Request):
+
+    stats = obtener_estadisticas()
+
+    return templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "stats": stats
+        }
+    )
