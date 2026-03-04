@@ -150,7 +150,7 @@ pdfFiles.push(file)
 }
 
 updatePdfInput()
-updateFileList(document.getElementById("pdfList"), pdfFiles)
+renderPdfList()
 
 }
 
@@ -166,6 +166,36 @@ input.files = dataTransfer.files
 
 document.getElementById("pdfInfo").innerText =
 "PDFs cargados: " + pdfFiles.length
+
+}
+
+function renderPdfList(){
+
+const list = document.getElementById("pdfList")
+
+list.innerHTML=""
+
+pdfFiles.forEach((file,index)=>{
+
+const li=document.createElement("li")
+
+li.innerHTML = `
+${file.name}
+<button onclick="removePdf(${index})" style="margin-left:10px;">❌</button>
+`
+
+list.appendChild(li)
+
+})
+
+}
+
+function removePdf(index){
+
+pdfFiles.splice(index,1)
+
+updatePdfInput()
+renderPdfList()
 
 }
 
