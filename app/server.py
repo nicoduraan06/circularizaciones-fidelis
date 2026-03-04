@@ -8,6 +8,7 @@ from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
 from services.progress_service import obtener_progreso
 from services.error_reader_service import leer_errores
+from services.retry_service import reintentar_error
 import os
 
 app = FastAPI()
@@ -132,3 +133,24 @@ def ver_errores(request: Request):
             "errores": errores
         }
     )
+
+@app.post("/reintentar")
+async def reintentar_envio(
+    destinatario: str = Form(...),
+    email_remitente: str = Form(...),
+    password: str = Form(...),
+    asunto: str = Form(...),
+    mensaje: str = Form(...)
+):
+
+    resultado = reintentar_error(
+        email_remitente,
+        password,
+        destinatario,
+        asunto,
+        mensaje
+    )
+
+    return {
+        "resultado": resultado
+    }

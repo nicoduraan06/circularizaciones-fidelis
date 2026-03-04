@@ -14,6 +14,7 @@
     <th>Fecha</th>
     <th>Destinatario</th>
     <th>Error</th>
+    <th>Reintentar</th>
 </tr>
 
 {% for e in errores %}
@@ -22,6 +23,27 @@
     <td>{{ e.fecha }}</td>
     <td>{{ e.destinatario }}</td>
     <td>{{ e.error }}</td>
+
+    <td>
+
+        <form action="/reintentar" method="post">
+
+            <input type="hidden" name="destinatario" value="{{ e.destinatario }}">
+
+            <input type="text" name="email_remitente" placeholder="Correo remitente">
+
+            <input type="password" name="password" placeholder="Contraseña app">
+
+            <input type="text" name="asunto" placeholder="Asunto">
+
+            <input type="text" name="mensaje" placeholder="Mensaje">
+
+            <button type="submit">Reintentar</button>
+
+        </form>
+
+    </td>
+
 </tr>
 
 {% endfor %}
