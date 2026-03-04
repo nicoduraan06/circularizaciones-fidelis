@@ -1,22 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Resultado de la Circularización</title>
+    <title>Envío en progreso</title>
 </head>
 
 <body>
 
-<h1>Sistema de Circularizaciones</h1>
+<h1>Circularización en progreso</h1>
 
-<h2>Circularización iniciada correctamente</h2>
+<p id="contador">Preparando envío...</p>
 
-<p><b>Destinatarios detectados:</b> {{ total_destinatarios }}</p>
+<div style="width:400px;border:1px solid black;height:30px">
 
-<p>Los correos se están enviando en segundo plano.</p>
+    <div id="barra"
+         style="height:30px;width:0%;background-color:green">
+    </div>
+
+</div>
 
 <br>
 
-<a href="/">Volver al formulario</a>
+<a href="/">Volver al inicio</a>
+
+<script>
+
+function actualizarProgreso(){
+
+    fetch("/progreso")
+    .then(res => res.json())
+    .then(data => {
+
+        let total = data.total
+        let enviados = data.enviados
+
+        if(total === 0){
+            return
+        }
+
+        let porcentaje = (enviados / total) * 100
+
+        document.getElementById("barra").style.width = porcentaje + "%"
+
+        document.getElementById("contador").innerText =
+            enviados + " / " + total + " correos enviados"
+
+    })
+
+}
+
+setInterval(actualizarProgreso, 1000)
+
+</script>
 
 </body>
 </html>
