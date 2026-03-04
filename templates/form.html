@@ -6,15 +6,19 @@
 
 <form action="/enviar" method="post" enctype="multipart/form-data">
 
-<p>
-<label>Subir Excel:</label><br>
-<input type="file" name="excel_file" accept=".xlsx">
-</p>
+<div class="drop-zone" id="excelDrop">
+<p>Arrastra aquí el Excel</p>
+<input type="file" name="excel_file" accept=".xlsx" hidden>
+</div>
 
-<p>
-<label>Subir PDFs:</label><br>
-<input type="file" name="pdf_files" multiple accept=".pdf">
-</p>
+<br>
+
+<div class="drop-zone" id="pdfDrop">
+<p>Arrastra aquí los PDFs</p>
+<input type="file" name="pdf_files" multiple accept=".pdf" hidden>
+</div>
+
+<br>
 
 <p>
 <label>Asunto:</label><br>
@@ -29,5 +33,58 @@
 <button type="submit">Enviar circularización</button>
 
 </form>
+
+<style>
+
+.drop-zone{
+border:2px dashed #aaa;
+padding:40px;
+text-align:center;
+cursor:pointer;
+}
+
+.drop-zone.dragover{
+background:#f0f8ff;
+border-color:#007bff;
+}
+
+</style>
+
+<script>
+
+function setupDropZone(zoneId){
+
+const zone = document.getElementById(zoneId)
+const input = zone.querySelector("input")
+
+zone.addEventListener("click", () => input.click())
+
+zone.addEventListener("dragover", (e)=>{
+e.preventDefault()
+zone.classList.add("dragover")
+})
+
+zone.addEventListener("dragleave", ()=>{
+zone.classList.remove("dragover")
+})
+
+zone.addEventListener("drop",(e)=>{
+
+e.preventDefault()
+zone.classList.remove("dragover")
+
+input.files = e.dataTransfer.files
+
+zone.querySelector("p").innerText =
+e.dataTransfer.files.length + " archivo(s) seleccionados"
+
+})
+
+}
+
+setupDropZone("excelDrop")
+setupDropZone("pdfDrop")
+
+</script>
 
 {% endblock %}
