@@ -178,6 +178,9 @@ def admin_panel(request: Request):
     if "user" not in request.session:
         return RedirectResponse("/login")
 
+    if request.session.get("role") != "admin":
+        return HTMLResponse("Acceso no autorizado", status_code=403)
+
     stats = obtener_estadisticas()
 
     return templates.TemplateResponse(
@@ -212,6 +215,7 @@ async def login(
 
     request.session["user"] = username
     request.session["email"] = usuario["email"]
+    request.session["role"] = usuario["role"]
 
     return RedirectResponse("/", status_code=302)
 
