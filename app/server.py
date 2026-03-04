@@ -12,9 +12,13 @@ from services.retry_service import reintentar_error
 from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
 from services.user_service import obtener_usuarios, crear_usuario, eliminar_usuario
+from fastapi.staticfiles import StaticFiles
 import os
 
 app = FastAPI()
+
+# 🔹 activar carpeta static para CSS / JS / imágenes
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     SessionMiddleware,
@@ -219,12 +223,14 @@ async def login(
 
     return RedirectResponse("/", status_code=302)
 
+
 @app.get("/logout")
 def logout(request: Request):
 
     request.session.clear()
 
     return RedirectResponse("/login", status_code=302)
+
 
 @app.get("/usuarios", response_class=HTMLResponse)
 def ver_usuarios(request: Request):
@@ -260,6 +266,7 @@ async def eliminar_usuario_endpoint(
     eliminar_usuario(username)
 
     return RedirectResponse("/usuarios", status_code=302)
+
 
 @app.post("/analizar_excel")
 async def analizar_excel(excel_file: UploadFile = File(...)):

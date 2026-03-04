@@ -1,42 +1,10 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Circularizaciones Fidelis</title>
 
-    <style>
+<title>Grupo Fidelis - Circularizaciones</title>
 
-        body{
-            font-family: Arial;
-            margin:0;
-        }
-
-        .sidebar{
-            width:220px;
-            background:#2c3e50;
-            color:white;
-            position:fixed;
-            height:100%;
-            padding:20px;
-        }
-
-        .sidebar a{
-            display:block;
-            color:white;
-            text-decoration:none;
-            padding:10px 0;
-        }
-
-        .sidebar a:hover{
-            background:#34495e;
-        }
-
-        .content{
-            margin-left:240px;
-            padding:30px;
-        }
-
-    </style>
+<link rel="stylesheet" href="/static/css/style.css">
 
 </head>
 
@@ -44,33 +12,34 @@
 
 <div class="sidebar">
 
-<h2>Fidelis</h2>
+<h2 style="color:white;padding-left:20px;">Fidelis</h2>
 
-<p>Usuario: {{ request.session.get("user") }}</p>
-
-<hr>
+    {% if request.session.user %}
+<p style="color:white;padding-left:20px;font-size:14px;">
+Usuario: {{ request.session.user }}
+</p>
+{% endif %}
 
 <a href="/">Nueva circularización</a>
 <a href="/dashboard">Dashboard</a>
 <a href="/historial">Historial</a>
 <a href="/errores">Errores</a>
-<a href="/usuarios">Usuarios</a>
-<a href="/admin">Admin</a>
-
-<hr>
-
+{% if request.session.role == "admin" %}
+<a href="/admin">Administración</a>
+{% endif %}
 <a href="/logout">Cerrar sesión</a>
 
 </div>
 
 <div class="content">
 
-{% block content %}
+<div class="container">
 
-{% endblock %}
+{% block content %}{% endblock %}
+
+</div>
 
 </div>
 
 </body>
-
 </html>
