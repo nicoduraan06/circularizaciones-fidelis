@@ -1,17 +1,12 @@
 {
-  "Nicolas Duran": {
-    "password": "grupofidelis",
-    "email": "nicolasdu2006@gmail.com",
-    "role": "admin"
-  },
-  "Angela Vizcaino": {
-    "password": "grupofidelis",
-    "email": "maria@grupofidelis.es",
-    "role": "admin"
-  },
-  "Esther Rodriguez": {
-    "password": "grupofidelis",
-    "email": "auditoria@grupofidelis.es",
-    "role": "user"
-  }
+    "Nicolas Duran": {
+        "password": "grupofidelis",
+        "email": "nicolasdu2006@gmail.com",
+        "role": "admin"
+    },
+    "Esther Rodriguez": {
+        "password": "grupofidelis",
+        "email": "auditoria@grupofidelis.es",
+        "role": "user"
+    }
 }
