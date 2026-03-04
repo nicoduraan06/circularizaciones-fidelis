@@ -29,15 +29,16 @@ templates = Jinja2Templates(directory="templates")
 
 UPLOAD_FOLDER = "uploads"
 
-# contraseña SMTP del sistema (la que ya usabas)
-SMTP_PASSWORD = "pdozlfkifknatdxb"
-
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
 
     if "user" not in request.session:
         return RedirectResponse("/login")
+
+    # si el usuario aún no ha configurado SMTP
+    if "smtp_password" not in request.session:
+        return RedirectResponse("/configurar_smtp")
 
     return templates.TemplateResponse("form.html", {"request": request})
 
@@ -72,6 +73,31 @@ def dashboard(request: Request):
     )
 
 
+# 🔹 pantalla para introducir contraseña SMTP
+@app.get("/configurar_smtp", response_class=HTMLResponse)
+def configurar_smtp_page(request: Request):
+
+    if "user" not in request.session:
+        return RedirectResponse("/login")
+
+    return templates.TemplateResponse(
+        "configurar_smtp.html",
+        {"request": request}
+    )
+
+
+# 🔹 guardar contraseña SMTP en sesión
+@app.post("/configurar_smtp")
+async def configurar_smtp(
+    request: Request,
+    smtp_password: str = Form(...)
+):
+
+    request.session["smtp_password"] = smtp_password
+
+    return RedirectResponse("/", status_code=302)
+
+
 @app.post("/enviar")
 async def enviar_circularizacion(
     request: Request,
@@ -86,7 +112,7 @@ async def enviar_circularizacion(
         return RedirectResponse("/login")
 
     email_remitente = request.session.get("email")
-    password = SMTP_PASSWORD
+    password = request.session.get("smtp_password")
 
     excel_path = os.path.join(UPLOAD_FOLDER, excel_file.filename)
 
@@ -221,7 +247,8 @@ async def login(
     request.session["email"] = usuario["email"]
     request.session["role"] = usuario["role"]
 
-    return RedirectResponse("/", status_code=302)
+    # 🔹 después del login pedimos SMTP
+    return RedirectResponse("/configurar_smtp", status_code=302)
 
 
 @app.get("/logout")
