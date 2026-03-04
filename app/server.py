@@ -19,6 +19,7 @@ def home(request: Request):
 
 @app.post("/enviar")
 async def enviar_circularizacion(
+    request: Request,
     background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
     pdf_files: list[UploadFile] = File(...),
@@ -66,9 +67,10 @@ async def enviar_circularizacion(
         mensaje
     )
 
-    return {
-        "mensaje": "Circularización iniciada correctamente",
-        "excel_guardado": excel_path,
-        "pdfs_guardados": pdf_paths,
-        "destinatarios_detectados": len(destinatarios)
-    }
+    return templates.TemplateResponse(
+        "resultado.html",
+        {
+            "request": request,
+            "total_destinatarios": len(destinatarios)
+        }
+    )
