@@ -1,4 +1,5 @@
 from services.logger_service import registrar_circularizacion
+from services.log_reader_service import leer_historial
 from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -16,6 +17,20 @@ UPLOAD_FOLDER = "uploads"
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("form.html", {"request": request})
+
+
+@app.get("/historial", response_class=HTMLResponse)
+def historial(request: Request):
+
+    registros = leer_historial()
+
+    return templates.TemplateResponse(
+        "historial.html",
+        {
+            "request": request,
+            "registros": registros
+        }
+    )
 
 
 @app.post("/enviar")
@@ -57,7 +72,8 @@ async def enviar_circularizacion(
 
     registrar_circularizacion(
         excel_file.filename,
-        len(destinatarios)
+        len(destinatarios),
+        email_remitente
     )
 
     print("DESTINATARIOS DETECTADOS:")

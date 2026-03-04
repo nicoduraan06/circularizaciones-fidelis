@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historial de Circularizaciones</title>
+</head>
+
+<body>
+
+<h1>Historial de Circularizaciones</h1>
+
+<table border="1">
+
+<tr>
+<th>Fecha</th>
+<th>Excel</th>
+<th>Correo remitente</th>
+<th>Destinatarios</th>
+</tr>
+
+{% for r in registros %}
+
+<tr>
+<td>{{ r.fecha }}</td>
+<td>{{ r.excel }}</td>
+<td>{{ r.correo }}</td>
+<td>{{ r.destinatarios }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<br>
+
+<a href="/">Volver al formulario</a>
+
+</body>
+</html>
