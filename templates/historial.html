@@ -4,6 +4,24 @@
 
 <h1>Historial de Circularizaciones</h1>
 
+<form method="get" action="/historial" style="margin-bottom:20px;">
+
+<input
+type="text"
+name="buscar"
+placeholder="Buscar por fecha, Excel o remitente"
+value="{{ buscar if buscar else '' }}"
+style="padding:8px;width:300px;"
+>
+
+<button type="submit">Buscar</button>
+
+<a href="/historial">
+<button type="button">Limpiar</button>
+</a>
+
+</form>
+
 <table border="1">
 
 <tr>

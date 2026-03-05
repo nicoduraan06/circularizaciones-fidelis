@@ -44,15 +44,26 @@ def home(request: Request):
 
 
 @app.get("/historial", response_class=HTMLResponse)
-def historial(request: Request):
+def historial(request: Request, buscar: str = ""):
 
     registros = leer_historial()
+
+    if buscar:
+        buscar_lower = buscar.lower()
+
+        registros = [
+            r for r in registros
+            if buscar_lower in r["fecha"].lower()
+            or buscar_lower in r["excel"].lower()
+            or buscar_lower in r["correo"].lower()
+        ]
 
     return templates.TemplateResponse(
         "historial.html",
         {
             "request": request,
-            "registros": registros
+            "registros": registros,
+            "buscar": buscar
         }
     )
 
