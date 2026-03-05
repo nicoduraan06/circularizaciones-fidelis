@@ -227,7 +227,10 @@ def login_page(request: Request):
 
     return templates.TemplateResponse(
         "login.html",
-        {"request": request}
+        {
+            "request": request,
+            "login_error": False
+        }
     )
 
 
@@ -241,13 +244,18 @@ async def login(
     usuario = autenticar_usuario(username, password)
 
     if not usuario:
-        return {"error": "Credenciales incorrectas"}
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "login_error": True
+            }
+        )
 
     request.session["user"] = username
     request.session["email"] = usuario["email"]
     request.session["role"] = usuario["role"]
 
-    # 🔹 después del login pedimos SMTP
     return RedirectResponse("/configurar_smtp", status_code=302)
 
 

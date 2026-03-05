@@ -4,7 +4,7 @@
 
 <div class="login-container">
 
-<div class="login-card">
+<div class="login-card" data-login-error="{{ login_error }}">
 
 <div class="login-logo">
 <img src="/static/images/logo-fidelis.png" alt="Grupo Fidelis">
@@ -85,5 +85,32 @@ background:#4a236b;
 }
 
 </style>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const card = document.querySelector(".login-card")
+    const loginError = card.dataset.loginError === "True"
+
+    const username = document.querySelector('input[name="username"]')
+    const password = document.querySelector('input[name="password"]')
+
+    // 🔹 limpiar error cuando el usuario vuelve a escribir
+    username.addEventListener("input", () => username.setCustomValidity(""))
+    password.addEventListener("input", () => password.setCustomValidity(""))
+
+    if(loginError){
+
+        if(password){
+            password.setCustomValidity("Usuario o contraseña incorrectos")
+            password.reportValidity()
+        }
+
+    }
+
+})
+
+</script>
 
 {% endblock %}
