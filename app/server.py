@@ -8,7 +8,6 @@ from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
 from services.progress_service import obtener_progreso
 from services.error_reader_service import leer_errores
-from services.retry_service import reintentar_error
 from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
 from services.user_service import obtener_usuarios, crear_usuario, eliminar_usuario
@@ -194,29 +193,6 @@ def ver_errores(request: Request):
             "errores": errores
         }
     )
-
-
-@app.post("/reintentar")
-async def reintentar_envio(
-    request: Request,
-    destinatario: str = Form(...)
-):
-
-    email_remitente = request.session.get("email")
-    password = request.session.get("smtp_password")
-
-    asunto = "Reenvío de circularización"
-    mensaje = "Este correo ha sido reenviado automáticamente."
-
-    resultado = reintentar_error(
-        email_remitente,
-        password,
-        destinatario,
-        asunto,
-        mensaje
-    )
-
-    return RedirectResponse("/errores", status_code=302)
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_panel(request: Request):

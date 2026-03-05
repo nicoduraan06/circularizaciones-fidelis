@@ -8,5 +8,9 @@
         "password": "grupofidelis",
         "email": "auditoria@grupofidelis.es",
         "role": "user"
+    },
+    "Angela Vizcaino": {
+        "password": "grupofidelis",
+        "email": "avizcaino@grupofidelis.es"
     }
 }
