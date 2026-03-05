@@ -2,15 +2,19 @@
 
 {% block content %}
 
-<h1>Historial de errores de envío</h1>
+<h1>Correos que no se pudieron enviar</h1>
+
+<p>
+Estos correos no se enviaron correctamente durante la circularización.
+Puedes reenviarlos manualmente.
+</p>
 
 <table border="1">
 
 <tr>
     <th>Fecha</th>
-    <th>Destinatario</th>
-    <th>Error</th>
-    <th>Reintentar</th>
+    <th>Correo</th>
+    <th>Acción</th>
 </tr>
 
 {% for e in errores %}
@@ -18,7 +22,6 @@
 <tr>
     <td>{{ e.fecha }}</td>
     <td>{{ e.destinatario }}</td>
-    <td>{{ e.error }}</td>
 
     <td>
 
@@ -26,15 +29,7 @@
 
             <input type="hidden" name="destinatario" value="{{ e.destinatario }}">
 
-            <input type="text" name="email_remitente" placeholder="Correo remitente">
-
-            <input type="password" name="password" placeholder="Contraseña app">
-
-            <input type="text" name="asunto" placeholder="Asunto">
-
-            <input type="text" name="mensaje" placeholder="Mensaje">
-
-            <button type="submit">Reintentar</button>
+            <button type="submit">Reenviar</button>
 
         </form>
 

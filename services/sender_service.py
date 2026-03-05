@@ -21,6 +21,8 @@ def procesar_circularizacion(
 
     iniciar_progreso(total)
 
+    errores = []
+
     for d in destinatarios:
 
         email_destino = d["email"]
@@ -61,9 +63,41 @@ def procesar_circularizacion(
 
             registrar_error(email_destino, e)
 
+            errores.append(email_destino)
+
             incrementar_enviados()
 
-        # Control de velocidad de envío (evita bloqueos SMTP)
         time.sleep(1)
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
+
+    # 🔹 enviar resumen al remitente
+    if errores:
+
+        asunto_resumen = "Resultado de circularización"
+
+        mensaje_resumen = f"""
+La circularización ha finalizado.
+
+Correos enviados: {total - len(errores)}
+Errores detectados: {len(errores)}
+
+No se pudieron enviar los siguientes correos:
+
+{chr(10).join(errores)}
+"""
+
+        try:
+
+            enviar_correo(
+                email_remitente,
+                password,
+                email_remitente,
+                asunto_resumen,
+                mensaje_resumen,
+                []
+            )
+
+        except Exception as e:
+
+            print("Error enviando email resumen:", e)
