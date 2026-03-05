@@ -58,6 +58,9 @@ def historial(request: Request, buscar: str = ""):
             or buscar_lower in r["correo"].lower()
         ]
 
+    # 🔹 ordenar por fecha descendente (lo más reciente primero)
+    registros = sorted(registros, key=lambda r: r["fecha"], reverse=True)
+
     return templates.TemplateResponse(
         "historial.html",
         {
