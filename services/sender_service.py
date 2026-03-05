@@ -1,7 +1,7 @@
 import os
 import time
 from app.mailer import enviar_correo
-from services.progress_service import iniciar_progreso, incrementar_enviados
+from services.progress_service import iniciar_progreso, incrementar_enviados, incrementar_errores
 from services.error_logger_service import registrar_error
 
 UPLOAD_FOLDER = "uploads"
@@ -64,6 +64,8 @@ def procesar_circularizacion(
             registrar_error(email_destino, e)
 
             errores.append(email_destino)
+
+            incrementar_errores()
 
             incrementar_enviados()
 

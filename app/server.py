@@ -198,12 +198,15 @@ def ver_errores(request: Request):
 
 @app.post("/reintentar")
 async def reintentar_envio(
-    destinatario: str = Form(...),
-    email_remitente: str = Form(...),
-    password: str = Form(...),
-    asunto: str = Form(...),
-    mensaje: str = Form(...)
+    request: Request,
+    destinatario: str = Form(...)
 ):
+
+    email_remitente = request.session.get("email")
+    password = request.session.get("smtp_password")
+
+    asunto = "Reenvío de circularización"
+    mensaje = "Este correo ha sido reenviado automáticamente."
 
     resultado = reintentar_error(
         email_remitente,
@@ -213,8 +216,7 @@ async def reintentar_envio(
         mensaje
     )
 
-    return {"resultado": resultado}
-
+    return RedirectResponse("/errores", status_code=302)
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_panel(request: Request):

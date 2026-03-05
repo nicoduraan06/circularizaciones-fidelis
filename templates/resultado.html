@@ -20,7 +20,11 @@
 
 <div id="finalizado" style="display:none; text-align:center;">
 
-<h2>✅ Circularización enviada con éxito</h2>
+<h2>✅ Circularización finalizada</h2>
+
+<br>
+
+<div id="resumen"></div>
 
 <br>
 
@@ -38,6 +42,7 @@ function actualizarProgreso(){
 
         let total = data.total
         let enviados = data.enviados
+        let errores = data.errores || 0
 
         if(total === 0){
             return
@@ -55,6 +60,26 @@ function actualizarProgreso(){
             document.getElementById("progresoContainer").style.display = "none"
 
             document.getElementById("finalizado").style.display = "block"
+
+            let enviadosCorrectos = total - errores
+
+            let resumenHTML = `
+            <p><b>Correos enviados correctamente:</b> ${enviadosCorrectos}</p>
+            <p><b>Errores detectados:</b> ${errores}</p>
+            `
+
+            if(errores > 0){
+
+                resumenHTML += `
+                <p style="color:#b30000">
+                Algunos correos no se pudieron enviar.<br>
+                Dirígete al apartado <b>Errores</b> para intentar reenviarlos.
+                </p>
+                `
+
+            }
+
+            document.getElementById("resumen").innerHTML = resumenHTML
 
         }
 

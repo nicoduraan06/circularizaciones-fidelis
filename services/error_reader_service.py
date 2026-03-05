@@ -18,4 +18,7 @@ def leer_errores():
         for row in reader:
             registros.append(row)
 
+    # ordenar por fecha descendente
+    registros.sort(key=lambda x: x["fecha"], reverse=True)
+
     return registros

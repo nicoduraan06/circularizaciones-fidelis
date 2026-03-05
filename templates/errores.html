@@ -9,7 +9,13 @@ Estos correos no se enviaron correctamente durante la circularización.
 Puedes reenviarlos manualmente.
 </p>
 
-<table border="1">
+<br>
+
+<input type="text" id="buscador" placeholder="Buscar correo..." onkeyup="buscarErrores()">
+
+<br><br>
+
+<table border="1" id="tablaErrores">
 
 <tr>
     <th>Fecha</th>
@@ -40,5 +46,38 @@ Puedes reenviarlos manualmente.
 {% endfor %}
 
 </table>
+
+
+<script>
+
+function buscarErrores(){
+
+    let input = document.getElementById("buscador")
+    let filtro = input.value.toLowerCase()
+
+    let tabla = document.getElementById("tablaErrores")
+    let filas = tabla.getElementsByTagName("tr")
+
+    for(let i=1;i<filas.length;i++){
+
+        let correo = filas[i].getElementsByTagName("td")[1]
+
+        if(correo){
+
+            let texto = correo.textContent.toLowerCase()
+
+            if(texto.indexOf(filtro) > -1){
+                filas[i].style.display = ""
+            }else{
+                filas[i].style.display = "none"
+            }
+
+        }
+
+    }
+
+}
+
+</script>
 
 {% endblock %}
