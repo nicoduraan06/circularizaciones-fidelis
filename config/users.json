@@ -6,11 +6,62 @@
     },
     "Esther Rodriguez": {
         "password": "grupofidelis",
-        "email": "auditoria@grupofidelis.es",
+        "email": "erodriguez@grupofidelis.es",
         "role": "user"
     },
     "Angela Vizcaino": {
         "password": "grupofidelis",
-        "email": "avizcaino@grupofidelis.es"
+        "email": "avizcaino@grupofidelis.es",
+        "role": "admin"
+    },
+    "Estefania Roldan": {
+        "password": "grupofidelis",
+        "email": "eroldan@grupofidelis.es",
+        "role": "user"
+    },
+    "Maria Vizcaino": {
+        "password": "grupofidelis",
+        "email": "mvizcaino@grupofidelis.es",
+        "role": "user"
+    },
+    "Abel Benitez": {
+        "password": "grupofidelis",
+        "email": "abenitez@grupofidelis.es",
+        "role": "user"
+    },
+    "Ismael Dominguez": {
+        "password": "grupofidelis",
+        "email": "idominguez@grupofidelis.es",
+        "role": "user"
+    },
+    "Marta Gonzalez": {
+        "password": "grupofidelis",
+        "email": "mgonzalez@grupofidelis.es",
+        "role": "user"
+    },
+    "Guillermo Loza": {
+        "password": "grupofidelis",
+        "email": "gloza@grupofidelis.es",
+        "role": "user"
+    },
+    "Elena Moreno": {
+        "password": "grupofidelis",
+        "email": "emoreno@grupofidelis.es",
+        "role": "user"
+    },
+    "Pablo Mora": {
+        "password": "grupofidelis",
+        "email": "pmora@grupofidelis.es",
+        "role": "user"
+    },
+    "Marta Cordero": {
+        "password": "grupofidelis",
+        "email": "mcordero@grupofidelis.es",
+        "role": "user"
+    },
+    "Mariano Perez": {
+        "password": "grupofidelis",
+        "email": "mperez@grupofidelis.es",
+        "role": "user"
     }
 }
