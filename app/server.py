@@ -327,8 +327,16 @@ async def analizar_excel(excel_file: UploadFile = File(...)):
     with open(temp_path, "wb") as f:
         f.write(await excel_file.read())
 
-    destinatarios = leer_excel(temp_path)
+    try:
 
-    return {
-        "total_destinatarios": len(destinatarios)
-    }
+        destinatarios = leer_excel(temp_path)
+
+        return {
+            "total_destinatarios": len(destinatarios)
+        }
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }
