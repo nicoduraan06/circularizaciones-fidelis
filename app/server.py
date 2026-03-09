@@ -28,6 +28,8 @@ templates = Jinja2Templates(directory="templates")
 
 UPLOAD_FOLDER = "uploads"
 
+import os
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
