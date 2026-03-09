@@ -1,4 +1,5 @@
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.mailer import enviar_correo
@@ -21,7 +22,10 @@ def enviar_un_correo(
 
     archivos_adjuntos = []
 
-    for doc in documentos:
+    # evitar PDFs duplicados
+    documentos_unicos = list(set(documentos))
+
+    for doc in documentos_unicos:
 
         ruta_pdf = os.path.join(UPLOAD_FOLDER, doc)
 
@@ -30,31 +34,41 @@ def enviar_un_correo(
         else:
             print(f"⚠ PDF no encontrado: {ruta_pdf}")
 
-    try:
+    intentos = 3
 
-        print(f"Enviando correo a: {email_destino}")
-        print(f"Adjuntos: {archivos_adjuntos}")
+    for intento in range(intentos):
 
-        enviar_correo(
-            email_remitente,
-            password,
-            email_destino,
-            asunto,
-            mensaje,
-            archivos_adjuntos
-        )
+        try:
 
-        print(f"Correo enviado correctamente a {email_destino}")
+            print(f"Enviando correo a: {email_destino}")
+            print(f"Adjuntos: {archivos_adjuntos}")
 
-        return {"email": email_destino, "error": None}
+            enviar_correo(
+                email_remitente,
+                password,
+                email_destino,
+                asunto,
+                mensaje,
+                archivos_adjuntos
+            )
 
-    except Exception as e:
+            print(f"Correo enviado correctamente a {email_destino}")
 
-        print(f"❌ Error enviando a {email_destino}: {e}")
+            return {"email": email_destino, "error": None}
 
-        registrar_error(email_destino, e)
+        except Exception as e:
 
-        return {"email": email_destino, "error": str(e)}
+            print(f"❌ Error enviando a {email_destino}: {e}")
+
+            if intento < intentos - 1:
+
+                print("Reintentando envío...")
+                time.sleep(3)
+
+            else:
+
+                registrar_error(email_destino, e)
+                return {"email": email_destino, "error": str(e)}
 
 
 def procesar_circularizacion(
@@ -97,14 +111,13 @@ def procesar_circularizacion(
             if resultado["error"]:
 
                 errores.append(resultado["email"])
-
                 incrementar_errores()
 
             incrementar_enviados()
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
 
-    # 🔹 enviar resumen al remitente
+    # enviar resumen al remitente
     if errores:
 
         asunto_resumen = "Resultado de circularización"

@@ -11,7 +11,6 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos):
     msg["To"] = destinatario
     msg.set_content(mensaje)
 
-    # adjuntar archivos
     for archivo in archivos:
 
         with open(archivo, "rb") as f:
@@ -26,7 +25,6 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos):
             filename=nombre_archivo
         )
 
-    # conexión SMTP (Gmail)
     with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
 
         smtp.starttls()
