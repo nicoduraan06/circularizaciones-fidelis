@@ -1,10 +1,60 @@
 import os
-import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from app.mailer import enviar_correo
 from services.progress_service import iniciar_progreso, incrementar_enviados, incrementar_errores
 from services.error_logger_service import registrar_error
 
 UPLOAD_FOLDER = "uploads"
+
+
+def enviar_un_correo(
+        d,
+        email_remitente,
+        password,
+        asunto,
+        mensaje
+):
+
+    email_destino = d["email"]
+    documentos = d["documentos"]
+
+    archivos_adjuntos = []
+
+    for doc in documentos:
+
+        ruta_pdf = os.path.join(UPLOAD_FOLDER, doc)
+
+        if os.path.exists(ruta_pdf):
+            archivos_adjuntos.append(ruta_pdf)
+        else:
+            print(f"⚠ PDF no encontrado: {ruta_pdf}")
+
+    try:
+
+        print(f"Enviando correo a: {email_destino}")
+        print(f"Adjuntos: {archivos_adjuntos}")
+
+        enviar_correo(
+            email_remitente,
+            password,
+            email_destino,
+            asunto,
+            mensaje,
+            archivos_adjuntos
+        )
+
+        print(f"Correo enviado correctamente a {email_destino}")
+
+        return {"email": email_destino, "error": None}
+
+    except Exception as e:
+
+        print(f"❌ Error enviando a {email_destino}: {e}")
+
+        registrar_error(email_destino, e)
+
+        return {"email": email_destino, "error": str(e)}
 
 
 def procesar_circularizacion(
@@ -23,53 +73,34 @@ def procesar_circularizacion(
 
     errores = []
 
-    for d in destinatarios:
+    # número de correos que se enviarán en paralelo
+    max_workers = 5
 
-        email_destino = d["email"]
-        documentos = d["documentos"]
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
 
-        archivos_adjuntos = []
-
-        for doc in documentos:
-
-            ruta_pdf = os.path.join(UPLOAD_FOLDER, doc)
-
-            if os.path.exists(ruta_pdf):
-                archivos_adjuntos.append(ruta_pdf)
-            else:
-                print(f"⚠ PDF no encontrado: {ruta_pdf}")
-
-        try:
-
-            print(f"Enviando correo a: {email_destino}")
-            print(f"Adjuntos: {archivos_adjuntos}")
-
-            enviar_correo(
+        futures = [
+            executor.submit(
+                enviar_un_correo,
+                d,
                 email_remitente,
                 password,
-                email_destino,
                 asunto,
-                mensaje,
-                archivos_adjuntos
+                mensaje
             )
+            for d in destinatarios
+        ]
 
-            print(f"Correo enviado correctamente a {email_destino}")
+        for future in as_completed(futures):
 
-            incrementar_enviados()
+            resultado = future.result()
 
-        except Exception as e:
+            if resultado["error"]:
 
-            print(f"❌ Error enviando a {email_destino}: {e}")
+                errores.append(resultado["email"])
 
-            registrar_error(email_destino, e)
-
-            errores.append(email_destino)
-
-            incrementar_errores()
+                incrementar_errores()
 
             incrementar_enviados()
-
-        time.sleep(1)
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
 
