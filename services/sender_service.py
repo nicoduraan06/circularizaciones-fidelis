@@ -1,5 +1,4 @@
 import os
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.mailer import enviar_correo
@@ -34,41 +33,31 @@ def enviar_un_correo(
         else:
             print(f"⚠ PDF no encontrado: {ruta_pdf}")
 
-    intentos = 3
+    try:
 
-    for intento in range(intentos):
+        print(f"Enviando correo a: {email_destino}")
+        print(f"Adjuntos: {archivos_adjuntos}")
 
-        try:
+        enviar_correo(
+            email_remitente,
+            password,
+            email_destino,
+            asunto,
+            mensaje,
+            archivos_adjuntos
+        )
 
-            print(f"Enviando correo a: {email_destino}")
-            print(f"Adjuntos: {archivos_adjuntos}")
+        print(f"Correo enviado correctamente a {email_destino}")
 
-            enviar_correo(
-                email_remitente,
-                password,
-                email_destino,
-                asunto,
-                mensaje,
-                archivos_adjuntos
-            )
+        return {"email": email_destino, "error": None}
 
-            print(f"Correo enviado correctamente a {email_destino}")
+    except Exception as e:
 
-            return {"email": email_destino, "error": None}
+        print(f"❌ Error enviando a {email_destino}: {e}")
 
-        except Exception as e:
+        registrar_error(email_destino, e)
 
-            print(f"❌ Error enviando a {email_destino}: {e}")
-
-            if intento < intentos - 1:
-
-                print("Reintentando envío...")
-                time.sleep(3)
-
-            else:
-
-                registrar_error(email_destino, e)
-                return {"email": email_destino, "error": str(e)}
+        return {"email": email_destino, "error": str(e)}
 
 
 def procesar_circularizacion(
@@ -87,8 +76,8 @@ def procesar_circularizacion(
 
     errores = []
 
-    # número de correos que se enviarán en paralelo
-    max_workers = 5
+    # ⚠ Reducimos paralelismo para evitar bloqueos SMTP
+    max_workers = 2
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
 
