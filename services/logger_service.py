@@ -1,27 +1,22 @@
-import datetime
-import os
-
-# carpeta de logs compatible con Vercel
-LOG_FOLDER = "/tmp/logs"
-LOG_FILE = os.path.join(LOG_FOLDER, "circularizaciones.log")
+from database.db import SessionLocal
+from database.models import Circularizacion
 
 
 def registrar_circularizacion(nombre_excel, total_destinatarios, correo_remitente):
 
-    # asegurar que la carpeta exista
-    os.makedirs(LOG_FOLDER, exist_ok=True)
+    db = SessionLocal()
 
-    fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
 
-    registro = f"""
-=====================================
-Fecha: {fecha}
-Excel: {nombre_excel}
-Correo: {correo_remitente}
-Destinatarios: {total_destinatarios}
-Estado: iniciada
-=====================================
-"""
+        registro = Circularizacion(
+            excel=nombre_excel,
+            correo=correo_remitente,
+            destinatarios=total_destinatarios
+        )
 
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write(registro)
+        db.add(registro)
+        db.commit()
+
+    finally:
+
+        db.close()

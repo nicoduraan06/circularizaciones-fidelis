@@ -1,40 +1,28 @@
-import os
-
-# carpeta temporal compatible con Vercel
-LOG_DIR = "/tmp/logs"
-LOG_FILE = os.path.join(LOG_DIR, "circularizaciones.log")
+from database.db import SessionLocal
+from database.models import Circularizacion
 
 
 def leer_historial():
 
-    registros = []
+    db = SessionLocal()
 
     try:
 
-        with open(LOG_FILE, "r", encoding="utf-8") as f:
-            contenido = f.read()
+        registros = db.query(Circularizacion).all()
 
-        bloques = contenido.split("=====================================")
+        resultado = []
 
-        for bloque in bloques:
+        for r in registros:
 
-            if "Fecha:" in bloque:
+            resultado.append({
+                "fecha": r.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+                "excel": r.excel,
+                "correo": r.correo,
+                "destinatarios": r.destinatarios
+            })
 
-                lineas = [l.strip() for l in bloque.strip().split("\n") if l.strip()]
+        return resultado
 
-                fecha = lineas[0].replace("Fecha:", "").strip()
-                excel = lineas[1].replace("Excel:", "").strip()
-                correo = lineas[2].replace("Correo:", "").strip()
-                destinatarios = lineas[3].replace("Destinatarios:", "").strip()
+    finally:
 
-                registros.append({
-                    "fecha": fecha,
-                    "excel": excel,
-                    "correo": correo,
-                    "destinatarios": destinatarios
-                })
-
-    except FileNotFoundError:
-        pass
-
-    return registros
+        db.close()

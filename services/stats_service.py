@@ -1,33 +1,38 @@
-from services.log_reader_service import leer_historial
+from database.db import SessionLocal
+from database.models import Circularizacion
 
 
 def obtener_estadisticas():
 
-    registros = leer_historial()
+    db = SessionLocal()
 
-    total_circularizaciones = len(registros)
+    try:
 
-    total_destinatarios = 0
+        registros = db.query(Circularizacion).all()
 
-    for r in registros:
-        try:
-            total_destinatarios += int(r.get("destinatarios", 0))
-        except:
-            pass
+        total_circularizaciones = len(registros)
 
-    ultimos = []
+        total_destinatarios = sum(
+            r.destinatarios for r in registros
+        )
 
-    for r in registros[-5:][::-1]:
+        ultimos = []
 
-        ultimos.append({
-            "fecha": r.get("fecha", ""),
-            "excel": r.get("excel", ""),
-            "remitente": r.get("correo", ""),
-            "destinatarios": r.get("destinatarios", "")
-        })
+        for r in registros[-5:][::-1]:
 
-    return {
-        "total_circularizaciones": total_circularizaciones,
-        "total_destinatarios": total_destinatarios,
-        "ultimos": ultimos
-    }
+            ultimos.append({
+                "fecha": r.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+                "excel": r.excel,
+                "remitente": r.correo,
+                "destinatarios": r.destinatarios
+            })
+
+        return {
+            "total_circularizaciones": total_circularizaciones,
+            "total_destinatarios": total_destinatarios,
+            "ultimos": ultimos
+        }
+
+    finally:
+
+        db.close()
