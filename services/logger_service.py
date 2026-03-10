@@ -1,6 +1,12 @@
 import datetime
+import os
 
-LOG_FILE = "logs/circularizaciones.log"
+# carpeta de logs compatible con Vercel
+LOG_FOLDER = "/tmp/logs"
+LOG_FILE = f"{LOG_FOLDER}/circularizaciones.log"
+
+# crear carpeta si no existe
+os.makedirs(LOG_FOLDER, exist_ok=True)
 
 
 def registrar_circularizacion(nombre_excel, total_destinatarios, correo_remitente):
