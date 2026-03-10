@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
+from database.db import SessionLocal
 
 Base = declarative_base()
 
@@ -32,3 +33,31 @@ class ErrorEnvio(Base):
     fecha = Column(DateTime, default=datetime.utcnow)
     destinatario = Column(String)
     error = Column(String)
+
+
+def crear_admin_inicial():
+
+    db = SessionLocal()
+
+    try:
+
+        existe_admin = db.query(Usuario).filter(
+            Usuario.username == "Angela Vizcaino"
+        ).first()
+
+        if not existe_admin:
+
+            admin = Usuario(
+                username="Angela Vizcaino",
+                password="grupofidelis",
+                email="avizcaino@grupofidelis.es",
+                role="admin"
+            )
+
+            db.add(admin)
+            db.commit()
+
+            print("ADMIN INICIAL CREADO")
+
+    finally:
+        db.close()

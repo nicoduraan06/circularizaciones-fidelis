@@ -1,53 +1,63 @@
-import json
-import os
-
-# ruta del archivo en el proyecto
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-USERS_FILE = os.path.join(BASE_DIR, "config", "users.json")
-
-# copia editable en Vercel
-TMP_USERS_FILE = "/tmp/users.json"
+from database.db import SessionLocal
+from database.models import Usuario
 
 
 def obtener_usuarios():
 
-    # si existe versión temporal (Vercel) usarla
-    if os.path.exists(TMP_USERS_FILE):
-        archivo = TMP_USERS_FILE
-    else:
-        archivo = USERS_FILE
+    db = SessionLocal()
 
     try:
-        with open(archivo, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
 
+        usuarios_db = db.query(Usuario).all()
 
-def guardar_usuarios(usuarios):
+        usuarios = {}
 
-    # en Vercel guardamos en /tmp
-    with open(TMP_USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(usuarios, f, indent=4)
+        for u in usuarios_db:
+
+            usuarios[u.username] = {
+                "email": u.email,
+                "role": u.role
+            }
+
+        return usuarios
+
+    finally:
+        db.close()
 
 
 def crear_usuario(username, password, email):
 
-    usuarios = obtener_usuarios()
+    db = SessionLocal()
 
-    usuarios[username] = {
-        "password": password,
-        "email": email
-    }
+    try:
 
-    guardar_usuarios(usuarios)
+        usuario = Usuario(
+            username=username,
+            password=password,
+            email=email,
+            role="user"
+        )
+
+        db.add(usuario)
+        db.commit()
+
+    finally:
+        db.close()
 
 
 def eliminar_usuario(username):
 
-    usuarios = obtener_usuarios()
+    db = SessionLocal()
 
-    if username in usuarios:
-        del usuarios[username]
+    try:
 
-    guardar_usuarios(usuarios)
+        usuario = db.query(Usuario).filter(
+            Usuario.username == username
+        ).first()
+
+        if usuario:
+            db.delete(usuario)
+            db.commit()
+
+    finally:
+        db.close()

@@ -1,29 +1,25 @@
-import json
-import os
-
-# ruta absoluta compatible con Vercel
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-USERS_FILE = os.path.join(BASE_DIR, "config", "users.json")
-
-
-def cargar_usuarios():
-
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
+from database.db import SessionLocal
+from database.models import Usuario
 
 
 def autenticar_usuario(username, password):
 
-    usuarios = cargar_usuarios()
+    db = SessionLocal()
 
-    if username in usuarios:
+    try:
 
-        usuario = usuarios[username]
+        usuario = db.query(Usuario).filter(
+            Usuario.username == username
+        ).first()
 
-        if usuario["password"] == password:
-            return usuario
+        if usuario and usuario.password == password:
 
-    return None
+            return {
+                "email": usuario.email,
+                "role": usuario.role
+            }
+
+        return None
+
+    finally:
+        db.close()

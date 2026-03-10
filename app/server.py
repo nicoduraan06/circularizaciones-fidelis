@@ -15,9 +15,10 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from database.db import engine
-from database.models import Base
+from database.models import Base, crear_admin_inicial
 
 Base.metadata.create_all(bind=engine)
+crear_admin_inicial()
 
 app = FastAPI()
 
