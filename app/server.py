@@ -14,6 +14,11 @@ from services.user_service import obtener_usuarios, crear_usuario, eliminar_usua
 from fastapi.staticfiles import StaticFiles
 import os
 
+from database.db import engine
+from database.models import Base
+
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
 # activar carpeta static para CSS / JS / imágenes

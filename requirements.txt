@@ -6,3 +6,5 @@ python-multipart
 itsdangerous
 openpyxl
 flask
+psycopg[binary]
+sqlalchemy
