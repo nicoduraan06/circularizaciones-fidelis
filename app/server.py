@@ -123,59 +123,69 @@ async def enviar_circularizacion(
     if "user" not in request.session:
         return RedirectResponse("/login")
 
-    email_remitente = request.session.get("email")
-    password = request.session.get("smtp_password")
+    try:
 
-    # guardar excel
-    excel_filename = os.path.basename(excel_file.filename)
-    excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
+        email_remitente = request.session.get("email")
+        password = request.session.get("smtp_password")
 
-    with open(excel_path, "wb") as f:
-        f.write(await excel_file.read())
+        excel_filename = os.path.basename(excel_file.filename)
+        excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
-    print(f"Excel guardado en: {excel_path}")
+        with open(excel_path, "wb") as f:
+            f.write(await excel_file.read())
 
-    pdf_paths = []
+        print(f"Excel guardado en: {excel_path}")
 
-    for pdf in pdf_files:
+        pdf_paths = []
 
-        pdf_filename = os.path.basename(pdf.filename)
-        pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
+        for pdf in pdf_files:
 
-        with open(pdf_path, "wb") as f:
-            f.write(await pdf.read())
+            pdf_filename = os.path.basename(pdf.filename)
+            pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
 
-        pdf_paths.append(pdf_path)
+            with open(pdf_path, "wb") as f:
+                f.write(await pdf.read())
 
-        print(f"PDF guardado: {pdf_path}")
+            pdf_paths.append(pdf_path)
 
-    destinatarios = leer_excel(excel_path)
+            print(f"PDF guardado: {pdf_path}")
 
-    registrar_circularizacion(
-        excel_file.filename,
-        len(destinatarios),
-        email_remitente
-    )
+        destinatarios = leer_excel(excel_path)
 
-    print("DESTINATARIOS DETECTADOS:")
-    print(destinatarios)
+        registrar_circularizacion(
+            excel_file.filename,
+            len(destinatarios),
+            email_remitente
+        )
 
-    # ejecutar envío directamente (compatible con Vercel)
-    procesar_circularizacion(
-        destinatarios,
-        email_remitente,
-        password,
-        asunto,
-        mensaje
-    )
+        print("DESTINATARIOS DETECTADOS:")
+        print(destinatarios)
 
-    return templates.TemplateResponse(
-        "resultado.html",
-        {
-            "request": request,
-            "total_destinatarios": len(destinatarios)
-        }
-    )
+        procesar_circularizacion(
+            destinatarios,
+            email_remitente,
+            password,
+            asunto,
+            mensaje
+        )
+
+        return templates.TemplateResponse(
+            "resultado.html",
+            {
+                "request": request,
+                "total_destinatarios": len(destinatarios)
+            }
+        )
+
+    except Exception as e:
+
+        print("ERROR EN ENVÍO:")
+        print(str(e))
+
+        return HTMLResponse(
+            f"Error en la circularización: {str(e)}",
+            status_code=500
+        )
 
 
 @app.get("/progreso")
