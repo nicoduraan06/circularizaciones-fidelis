@@ -1,12 +1,12 @@
 from services.logger_service import registrar_circularizacion
 from services.log_reader_service import leer_historial
 from services.stats_service import obtener_estadisticas
-from fastapi import FastAPI, Request, UploadFile, File, Form
+from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
+from services.progress_service import obtener_progreso
 from app.excel_reader import leer_excel
-from services.progress_service import obtener_progreso, iniciar_progreso
 from services.error_reader_service import leer_errores
 from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
@@ -35,7 +35,6 @@ templates = Jinja2Templates(directory="templates")
 # carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
 
-# asegurar que existe
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
@@ -120,6 +119,7 @@ async def configurar_smtp(
 @app.post("/enviar")
 async def enviar_circularizacion(
     request: Request,
+    background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
     pdf_files: list[UploadFile] = File(...),
     asunto: str = Form(...),
@@ -141,11 +141,7 @@ async def enviar_circularizacion(
         with open(excel_path, "wb") as f:
             f.write(await excel_file.read())
 
-        print(f"Excel guardado en: {excel_path}")
-
         # guardar PDFs
-        pdf_paths = []
-
         if pdf_files:
 
             for pdf in pdf_files:
@@ -156,15 +152,8 @@ async def enviar_circularizacion(
                 with open(pdf_path, "wb") as f:
                     f.write(await pdf.read())
 
-                pdf_paths.append(pdf_path)
-
-                print(f"PDF guardado: {pdf_path}")
-
         # leer excel
         destinatarios = leer_excel(excel_path)
-
-        # iniciar progreso
-        iniciar_progreso(len(destinatarios))
 
         registrar_circularizacion(
             excel_file.filename,
@@ -172,10 +161,9 @@ async def enviar_circularizacion(
             email_remitente
         )
 
-        print("DESTINATARIOS DETECTADOS:")
-        print(destinatarios)
-
-        procesar_circularizacion(
+        # envío en segundo plano
+        background_tasks.add_task(
+            procesar_circularizacion,
             destinatarios,
             email_remitente,
             password,
@@ -186,8 +174,7 @@ async def enviar_circularizacion(
         return templates.TemplateResponse(
             "resultado.html",
             {
-                "request": request,
-                "total_destinatarios": len(destinatarios)
+                "request": request
             }
         )
 

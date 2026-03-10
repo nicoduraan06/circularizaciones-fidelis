@@ -46,10 +46,11 @@ async function actualizarProgreso(){
         let errores = data.errores || 0
 
         if(total === 0){
+            document.getElementById("contador").innerText = "Preparando envío..."
             return
         }
 
-        let porcentaje = (enviados / total) * 100
+        let porcentaje = Math.min((enviados / total) * 100, 100)
 
         document.getElementById("barra").style.width = porcentaje + "%"
 

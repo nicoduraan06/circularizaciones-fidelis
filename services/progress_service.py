@@ -1,45 +1,27 @@
-import json
-import os
+from database.db import SessionLocal
+from database.models import Circularizacion
 
-PROGRESS_FILE = "/tmp/progreso.json"
+estado_envio = {
+    "total": 0,
+    "enviados": 0,
+    "errores": 0
+}
 
 
 def iniciar_progreso(total):
 
-    estado = {
-        "total": total,
-        "enviados": 0,
-        "errores": 0
-    }
-
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(estado, f)
+    estado_envio["total"] = total
+    estado_envio["enviados"] = 0
+    estado_envio["errores"] = 0
 
 
 def incrementar_enviados():
-
-    estado = obtener_progreso()
-
-    estado["enviados"] += 1
-
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(estado, f)
+    estado_envio["enviados"] += 1
 
 
 def incrementar_errores():
-
-    estado = obtener_progreso()
-
-    estado["errores"] += 1
-
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(estado, f)
+    estado_envio["errores"] += 1
 
 
 def obtener_progreso():
-
-    if not os.path.exists(PROGRESS_FILE):
-        return {"total": 0, "enviados": 0, "errores": 0}
-
-    with open(PROGRESS_FILE) as f:
-        return json.load(f)
+    return estado_envio

@@ -36,8 +36,8 @@ def enviar_un_correo(
 
     try:
 
-        print(f"Enviando correo a: {email_destino}")
-        print(f"Adjuntos: {archivos_adjuntos}")
+        print(f"📧 Enviando correo a: {email_destino}")
+        print(f"📎 Adjuntos: {archivos_adjuntos}")
 
         enviar_correo(
             email_remitente,
@@ -48,7 +48,7 @@ def enviar_un_correo(
             archivos_adjuntos
         )
 
-        print(f"Correo enviado correctamente a {email_destino}")
+        print(f"✅ Correo enviado correctamente a {email_destino}")
 
         return {"email": email_destino, "error": None}
 
@@ -56,7 +56,7 @@ def enviar_un_correo(
 
         print(f"❌ Error enviando a {email_destino}: {e}")
 
-        registrar_error(email_destino, e)
+        registrar_error(email_destino, str(e))
 
         return {"email": email_destino, "error": str(e)}
 
@@ -73,6 +73,7 @@ def procesar_circularizacion(
 
     total = len(destinatarios)
 
+    # iniciar progreso
     iniciar_progreso(total)
 
     errores = []
@@ -96,14 +97,23 @@ def procesar_circularizacion(
 
         for future in as_completed(futures):
 
-            resultado = future.result()
+            try:
 
-            if resultado["error"]:
+                resultado = future.result()
 
-                errores.append(resultado["email"])
+                if resultado["error"]:
+
+                    errores.append(resultado["email"])
+                    incrementar_errores()
+
+                incrementar_enviados()
+
+            except Exception as e:
+
+                print("❌ Error inesperado en worker:", e)
+
                 incrementar_errores()
-
-            incrementar_enviados()
+                incrementar_enviados()
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
 
@@ -136,4 +146,4 @@ No se pudieron enviar los siguientes correos:
 
         except Exception as e:
 
-            print("Error enviando email resumen:", e)
+            print("❌ Error enviando email resumen:", e)
