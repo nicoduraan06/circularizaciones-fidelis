@@ -41,23 +41,36 @@ def crear_admin_inicial():
 
     try:
 
-        existe_admin = db.query(Usuario).filter(
-            Usuario.username == "Angela Vizcaino"
-        ).first()
+        admins = [
+            {
+                "username": "Angela Vizcaino",
+                "password": "grupofidelis",
+                "email": "avizcaino@grupofidelis.es",
+                "role": "admin"
+            },
+            {
+                "username": "Nicolas Duran",
+                "password": "grupofidelis",
+                "email": "nicolasdu2006@gmail.com",
+                "role": "admin"
+            }
+        ]
 
-        if not existe_admin:
+        for admin_data in admins:
 
-            admin = Usuario(
-                username="Angela Vizcaino",
-                password="grupofidelis",
-                email="avizcaino@grupofidelis.es",
-                role="admin"
-            )
+            existe_admin = db.query(Usuario).filter(
+                Usuario.username == admin_data["username"]
+            ).first()
 
-            db.add(admin)
-            db.commit()
+            if not existe_admin:
 
-            print("ADMIN INICIAL CREADO")
+                admin = Usuario(**admin_data)
+
+                db.add(admin)
+
+        db.commit()
+
+        print("ADMINS INICIALES VERIFICADOS")
 
     finally:
         db.close()
