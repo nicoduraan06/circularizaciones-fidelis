@@ -1,7 +1,7 @@
 from services.logger_service import registrar_circularizacion
 from services.log_reader_service import leer_historial
 from services.stats_service import obtener_estadisticas
-from fastapi import FastAPI, Request, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
@@ -16,7 +16,7 @@ import os
 
 app = FastAPI()
 
-# 🔹 activar carpeta static para CSS / JS / imágenes
+# activar carpeta static para CSS / JS / imágenes
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
@@ -26,7 +26,7 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory="templates")
 
-# 🔹 carpeta temporal compatible con Vercel
+# carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
 
 if not os.path.exists(UPLOAD_FOLDER):
@@ -114,7 +114,6 @@ async def configurar_smtp(
 @app.post("/enviar")
 async def enviar_circularizacion(
     request: Request,
-    background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
     pdf_files: list[UploadFile] = File(...),
     asunto: str = Form(...),
@@ -127,7 +126,7 @@ async def enviar_circularizacion(
     email_remitente = request.session.get("email")
     password = request.session.get("smtp_password")
 
-    # 🔹 guardar excel
+    # guardar excel
     excel_filename = os.path.basename(excel_file.filename)
     excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
@@ -161,8 +160,8 @@ async def enviar_circularizacion(
     print("DESTINATARIOS DETECTADOS:")
     print(destinatarios)
 
-    background_tasks.add_task(
-        procesar_circularizacion,
+    # ejecutar envío directamente (compatible con Vercel)
+    procesar_circularizacion(
         destinatarios,
         email_remitente,
         password,
