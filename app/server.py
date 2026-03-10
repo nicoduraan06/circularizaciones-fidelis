@@ -26,10 +26,10 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory="templates")
 
-UPLOAD_FOLDER = "uploads"
-
-import os
+# 🔹 carpeta temporal compatible con Vercel
+UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -37,7 +37,6 @@ def home(request: Request):
     if "user" not in request.session:
         return RedirectResponse("/login")
 
-    # si el usuario aún no ha configurado SMTP
     if "smtp_password" not in request.session:
         return RedirectResponse("/configurar_smtp")
 
@@ -59,7 +58,6 @@ def historial(request: Request, buscar: str = ""):
             or buscar_lower in r["correo"].lower()
         ]
 
-    # 🔹 ordenar por fecha descendente (lo más reciente primero)
     registros = sorted(registros, key=lambda r: r["fecha"], reverse=True)
 
     return templates.TemplateResponse(
@@ -88,7 +86,6 @@ def dashboard(request: Request):
     )
 
 
-# 🔹 pantalla para introducir contraseña SMTP
 @app.get("/configurar_smtp", response_class=HTMLResponse)
 def configurar_smtp_page(request: Request):
 
@@ -101,7 +98,6 @@ def configurar_smtp_page(request: Request):
     )
 
 
-# 🔹 guardar contraseña SMTP en sesión
 @app.post("/configurar_smtp")
 async def configurar_smtp(
     request: Request,
@@ -195,6 +191,7 @@ def ver_errores(request: Request):
             "errores": errores
         }
     )
+
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_panel(request: Request):
@@ -300,7 +297,7 @@ async def eliminar_usuario_endpoint(
 @app.post("/analizar_excel")
 async def analizar_excel(excel_file: UploadFile = File(...)):
 
-    temp_path = os.path.join("uploads", excel_file.filename)
+    temp_path = os.path.join(UPLOAD_FOLDER, excel_file.filename)
 
     with open(temp_path, "wb") as f:
         f.write(await excel_file.read())
