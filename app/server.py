@@ -28,7 +28,9 @@ templates = Jinja2Templates(directory="templates")
 
 # 🔹 carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -125,7 +127,9 @@ async def enviar_circularizacion(
     email_remitente = request.session.get("email")
     password = request.session.get("smtp_password")
 
-    excel_path = os.path.join(UPLOAD_FOLDER, excel_file.filename)
+    # 🔹 guardar excel
+    excel_filename = os.path.basename(excel_file.filename)
+    excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
     with open(excel_path, "wb") as f:
         f.write(await excel_file.read())
@@ -136,7 +140,8 @@ async def enviar_circularizacion(
 
     for pdf in pdf_files:
 
-        pdf_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
+        pdf_filename = os.path.basename(pdf.filename)
+        pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
 
         with open(pdf_path, "wb") as f:
             f.write(await pdf.read())
@@ -297,7 +302,8 @@ async def eliminar_usuario_endpoint(
 @app.post("/analizar_excel")
 async def analizar_excel(excel_file: UploadFile = File(...)):
 
-    temp_path = os.path.join(UPLOAD_FOLDER, excel_file.filename)
+    filename = os.path.basename(excel_file.filename)
+    temp_path = os.path.join(UPLOAD_FOLDER, filename)
 
     with open(temp_path, "wb") as f:
         f.write(await excel_file.read())
