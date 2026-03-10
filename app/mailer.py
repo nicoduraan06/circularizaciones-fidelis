@@ -14,6 +14,10 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos):
     # adjuntar archivos
     for archivo in archivos:
 
+        if not os.path.exists(archivo):
+            print(f"⚠ Archivo no encontrado: {archivo}")
+            continue
+
         with open(archivo, "rb") as f:
             contenido = f.read()
 
@@ -26,15 +30,9 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos):
             filename=nombre_archivo
         )
 
-    # conexión SMTP
-    smtp = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
-
-    try:
+    # conexión SMTP segura
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
 
         smtp.starttls()
         smtp.login(remitente, password)
         smtp.send_message(msg)
-
-    finally:
-
-        smtp.quit()

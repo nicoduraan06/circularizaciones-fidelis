@@ -1,6 +1,9 @@
 import json
+import os
 
-USERS_FILE = "config/users.json"
+# ruta absoluta compatible con Vercel
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+USERS_FILE = os.path.join(BASE_DIR, "config", "users.json")
 
 
 def cargar_usuarios():

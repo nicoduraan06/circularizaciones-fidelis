@@ -10,7 +10,6 @@ def leer_excel(ruta_excel):
 
     columnas = list(df.columns)
 
-    # Posibles nombres de columnas
     posibles_destinatario = [
         "DESTINATARIO",
         "EMPRESA",
@@ -41,7 +40,7 @@ def leer_excel(ruta_excel):
         "MODELO DE DOCUMENTO 3"
     ]
 
-    # Detectar columna destinatario
+    # detectar columna destinatario
     col_destinatario = None
     for c in columnas:
         for p in posibles_destinatario:
@@ -51,7 +50,7 @@ def leer_excel(ruta_excel):
         if col_destinatario:
             break
 
-    # Detectar columna email
+    # detectar columna email
     col_email = None
     for c in columnas:
         for p in posibles_email:
@@ -61,7 +60,7 @@ def leer_excel(ruta_excel):
         if col_email:
             break
 
-    # Detectar columnas de documentos
+    # detectar columnas de documentos
     cols_documentos = []
     for c in columnas:
         for p in posibles_documentos:
@@ -78,7 +77,9 @@ def leer_excel(ruta_excel):
 
     for _, fila in df.iterrows():
 
-        nombre = fila[col_destinatario] if col_destinatario else ""
+        nombre = ""
+        if col_destinatario and not pd.isna(fila[col_destinatario]):
+            nombre = str(fila[col_destinatario]).strip()
 
         emails_raw = str(fila[col_email])
 
@@ -104,6 +105,9 @@ def leer_excel(ruta_excel):
                 d = d.strip()
                 if d:
                     documentos.append(d)
+
+        # eliminar duplicados
+        documentos = list(set(documentos))
 
         for email in emails:
 

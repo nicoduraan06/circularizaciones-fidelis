@@ -1,12 +1,24 @@
 import json
+import os
 
-USERS_FILE = "config/users.json"
+# ruta del archivo en el proyecto
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+USERS_FILE = os.path.join(BASE_DIR, "config", "users.json")
+
+# copia editable en Vercel
+TMP_USERS_FILE = "/tmp/users.json"
 
 
 def obtener_usuarios():
 
+    # si existe versión temporal (Vercel) usarla
+    if os.path.exists(TMP_USERS_FILE):
+        archivo = TMP_USERS_FILE
+    else:
+        archivo = USERS_FILE
+
     try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
+        with open(archivo, "r", encoding="utf-8") as f:
             return json.load(f)
     except:
         return {}
@@ -14,7 +26,8 @@ def obtener_usuarios():
 
 def guardar_usuarios(usuarios):
 
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
+    # en Vercel guardamos en /tmp
+    with open(TMP_USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(usuarios, f, indent=4)
 
 

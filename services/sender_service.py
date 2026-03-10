@@ -5,7 +5,8 @@ from app.mailer import enviar_correo
 from services.progress_service import iniciar_progreso, incrementar_enviados, incrementar_errores
 from services.error_logger_service import registrar_error
 
-UPLOAD_FOLDER = "uploads"
+# carpeta temporal compatible con Vercel
+UPLOAD_FOLDER = "/tmp/uploads"
 
 
 def enviar_un_correo(
@@ -76,7 +77,7 @@ def procesar_circularizacion(
 
     errores = []
 
-    # ⚠ Reducimos paralelismo para evitar bloqueos SMTP
+    # paralelismo controlado para SMTP
     max_workers = 2
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

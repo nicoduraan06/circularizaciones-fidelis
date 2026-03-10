@@ -11,7 +11,7 @@ def obtener_estadisticas():
 
     for r in registros:
         try:
-            total_destinatarios += int(r["destinatarios"])
+            total_destinatarios += int(r.get("destinatarios", 0))
         except:
             pass
 
@@ -22,7 +22,7 @@ def obtener_estadisticas():
         ultimos.append({
             "fecha": r.get("fecha", ""),
             "excel": r.get("excel", ""),
-            "remitente": r.get("correo", ""),  # ← AQUÍ ESTÁ LA CLAVE
+            "remitente": r.get("correo", ""),
             "destinatarios": r.get("destinatarios", "")
         })
 

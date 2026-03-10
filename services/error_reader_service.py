@@ -1,7 +1,9 @@
 import csv
 import os
 
-LOG_FILE = "logs/errores_envio.csv"
+# carpeta temporal compatible con Vercel
+LOG_DIR = "/tmp/logs"
+LOG_FILE = os.path.join(LOG_DIR, "errores_envio.csv")
 
 
 def leer_errores():

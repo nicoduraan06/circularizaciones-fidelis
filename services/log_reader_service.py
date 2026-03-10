@@ -1,4 +1,8 @@
-LOG_FILE = "logs/circularizaciones.log"
+import os
+
+# carpeta temporal compatible con Vercel
+LOG_DIR = "/tmp/logs"
+LOG_FILE = os.path.join(LOG_DIR, "circularizaciones.log")
 
 
 def leer_historial():

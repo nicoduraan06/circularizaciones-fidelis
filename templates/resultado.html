@@ -34,14 +34,15 @@
 
 <script>
 
-function actualizarProgreso(){
+async function actualizarProgreso(){
 
-    fetch("/progreso")
-    .then(res => res.json())
-    .then(data => {
+    try{
 
-        let total = data.total
-        let enviados = data.enviados
+        const res = await fetch("/progreso")
+        const data = await res.json()
+
+        let total = data.total || 0
+        let enviados = data.enviados || 0
         let errores = data.errores || 0
 
         if(total === 0){
@@ -58,7 +59,6 @@ function actualizarProgreso(){
         if(enviados >= total){
 
             document.getElementById("progresoContainer").style.display = "none"
-
             document.getElementById("finalizado").style.display = "block"
 
             let enviadosCorrectos = total - errores
@@ -81,13 +81,17 @@ function actualizarProgreso(){
 
             document.getElementById("resumen").innerHTML = resumenHTML
 
+            clearInterval(intervalo)
+
         }
 
-    })
+    }catch(e){
+        console.error("Error obteniendo progreso:", e)
+    }
 
 }
 
-setInterval(actualizarProgreso, 1000)
+let intervalo = setInterval(actualizarProgreso, 1000)
 
 </script>
 

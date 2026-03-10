@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from services.sender_service import procesar_circularizacion
 from app.excel_reader import leer_excel
-from services.progress_service import obtener_progreso
+from services.progress_service import obtener_progreso, iniciar_progreso
 from services.error_reader_service import leer_errores
 from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
@@ -29,8 +29,8 @@ templates = Jinja2Templates(directory="templates")
 # carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# asegurar que existe
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -128,6 +128,7 @@ async def enviar_circularizacion(
         email_remitente = request.session.get("email")
         password = request.session.get("smtp_password")
 
+        # guardar excel
         excel_filename = os.path.basename(excel_file.filename)
         excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
@@ -136,21 +137,28 @@ async def enviar_circularizacion(
 
         print(f"Excel guardado en: {excel_path}")
 
+        # guardar PDFs
         pdf_paths = []
 
-        for pdf in pdf_files:
+        if pdf_files:
 
-            pdf_filename = os.path.basename(pdf.filename)
-            pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
+            for pdf in pdf_files:
 
-            with open(pdf_path, "wb") as f:
-                f.write(await pdf.read())
+                pdf_filename = os.path.basename(pdf.filename)
+                pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
 
-            pdf_paths.append(pdf_path)
+                with open(pdf_path, "wb") as f:
+                    f.write(await pdf.read())
 
-            print(f"PDF guardado: {pdf_path}")
+                pdf_paths.append(pdf_path)
 
+                print(f"PDF guardado: {pdf_path}")
+
+        # leer excel
         destinatarios = leer_excel(excel_path)
+
+        # iniciar progreso
+        iniciar_progreso(len(destinatarios))
 
         registrar_circularizacion(
             excel_file.filename,

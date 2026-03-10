@@ -2,12 +2,14 @@ from datetime import datetime
 import csv
 import os
 
-LOG_FILE = "logs/errores_envio.csv"
+# carpeta temporal compatible con Vercel
+LOG_DIR = "/tmp/logs"
+LOG_FILE = os.path.join(LOG_DIR, "errores_envio.csv")
 
 
 def registrar_error(destinatario, error):
 
-    os.makedirs("logs", exist_ok=True)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     existe = os.path.exists(LOG_FILE)
 

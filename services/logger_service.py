@@ -3,13 +3,13 @@ import os
 
 # carpeta de logs compatible con Vercel
 LOG_FOLDER = "/tmp/logs"
-LOG_FILE = f"{LOG_FOLDER}/circularizaciones.log"
-
-# crear carpeta si no existe
-os.makedirs(LOG_FOLDER, exist_ok=True)
+LOG_FILE = os.path.join(LOG_FOLDER, "circularizaciones.log")
 
 
 def registrar_circularizacion(nombre_excel, total_destinatarios, correo_remitente):
+
+    # asegurar que la carpeta exista
+    os.makedirs(LOG_FOLDER, exist_ok=True)
 
     fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
