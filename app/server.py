@@ -32,7 +32,6 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory="templates")
 
-# carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -123,7 +122,8 @@ async def enviar_circularizacion(
     excel_file: UploadFile = File(...),
     pdf_files: list[UploadFile] = File(...),
     asunto: str = Form(...),
-    mensaje: str = Form(...)
+    mensaje: str = Form(...),
+    cc: str = Form("")   # NUEVO CAMPO
 ):
 
     if "user" not in request.session:
@@ -133,6 +133,16 @@ async def enviar_circularizacion(
 
         email_remitente = request.session.get("email")
         password = request.session.get("smtp_password")
+
+        # convertir CC en lista
+        lista_cc = []
+
+        if cc:
+            lista_cc = [
+                c.strip()
+                for c in cc.replace(";", ",").split(",")
+                if c.strip()
+            ]
 
         # guardar excel
         excel_filename = os.path.basename(excel_file.filename)
@@ -168,7 +178,8 @@ async def enviar_circularizacion(
             email_remitente,
             password,
             asunto,
-            mensaje
+            mensaje,
+            lista_cc   # PASAMOS LAS COPIAS
         )
 
         return templates.TemplateResponse(

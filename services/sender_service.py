@@ -14,7 +14,8 @@ def enviar_un_correo(
         email_remitente,
         password,
         asunto,
-        mensaje
+        mensaje,
+        cc
 ):
 
     email_destino = d["email"]
@@ -45,7 +46,8 @@ def enviar_un_correo(
             email_destino,
             asunto,
             mensaje,
-            archivos_adjuntos
+            archivos_adjuntos,
+            cc
         )
 
         print(f"✅ Correo enviado correctamente a {email_destino}")
@@ -66,7 +68,8 @@ def procesar_circularizacion(
         email_remitente,
         password,
         asunto,
-        mensaje
+        mensaje,
+        cc
 ):
 
     print("===== INICIO ENVÍO DE CIRCULARIZACIÓN =====")
@@ -90,7 +93,8 @@ def procesar_circularizacion(
                 email_remitente,
                 password,
                 asunto,
-                mensaje
+                mensaje,
+                cc
             )
             for d in destinatarios
         ]
@@ -141,7 +145,8 @@ No se pudieron enviar los siguientes correos:
                 email_remitente,
                 asunto_resumen,
                 mensaje_resumen,
-                []
+                [],
+                cc
             )
 
         except Exception as e:
