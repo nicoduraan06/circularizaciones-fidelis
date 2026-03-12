@@ -18,7 +18,14 @@ def enviar_un_correo(
         cc
 ):
 
-    email_destino = d["email"]
+    # --- MODIFICACIÓN ---
+    # permitir múltiples correos separados por coma o punto y coma
+    emails = [
+        e.strip()
+        for e in d["email"].replace(";", ",").split(",")
+        if e.strip()
+    ]
+
     documentos = d["documentos"]
 
     archivos_adjuntos = []
@@ -41,30 +48,30 @@ def enviar_un_correo(
 
     try:
 
-        print(f"📧 Enviando correo a: {email_destino}")
+        print(f"📧 Enviando correo a: {emails}")
         print(f"📎 Adjuntos: {archivos_adjuntos}")
 
         enviar_correo(
             email_remitente,
             password,
-            email_destino,
+            emails,
             asunto,
             mensaje,
             archivos_adjuntos,
             cc
         )
 
-        print(f"✅ Correo enviado correctamente a {email_destino}")
+        print(f"✅ Correo enviado correctamente a {emails}")
 
-        return {"email": email_destino, "error": None}
+        return {"email": ", ".join(emails), "error": None}
 
     except Exception as e:
 
-        print(f"❌ Error enviando a {email_destino}: {e}")
+        print(f"❌ Error enviando a {emails}: {e}")
 
-        registrar_error(email_destino, str(e))
+        registrar_error(", ".join(emails), str(e))
 
-        return {"email": email_destino, "error": str(e)}
+        return {"email": ", ".join(emails), "error": str(e)}
 
 
 def procesar_circularizacion(
