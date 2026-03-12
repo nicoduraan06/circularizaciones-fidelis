@@ -376,7 +376,8 @@ for(const file of pdfFiles){
 
 const blob = await upload(file.name, file, {
 access: "private",
-handleUploadUrl: "/api/blob-upload"
+handleUploadUrl: "/api/blob-upload",
+allowOverwrite: true
 })
 
 pdfsSubidos.push({
