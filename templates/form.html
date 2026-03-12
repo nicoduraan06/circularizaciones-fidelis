@@ -64,9 +64,13 @@ que el indicado en el Excel.
 <input type="file" multiple accept=".pdf" hidden>
 </div>
 
-<ul id="pdfList"></ul>
-
 <p id="pdfInfo" style="font-weight:bold;"></p>
+
+<button type="button" onclick="togglePdfList()">Ver / Ocultar lista de PDFs</button>
+
+<div id="pdfContainer" style="display:none; max-height:200px; overflow-y:auto; border:1px solid #ddd; margin-top:10px; padding:5px;">
+<ul id="pdfList"></ul>
+</div>
 
 <button type="button" onclick="clearPDFs()">Limpiar PDFs</button>
 
@@ -74,12 +78,18 @@ que el indicado en el Excel.
 
 <p>
 <label>Asunto:</label><br>
-<input type="text" name="asunto">
+<input type="text" name="asunto" value="Solicitud de Información para Auditoría de Cuentas de la entidad">
 </p>
 
 <p>
 <label>Mensaje:</label><br>
-<textarea name="mensaje" rows="6" cols="60"></textarea>
+<textarea name="mensaje" rows="8" cols="60">Muy Señores nuestros:
+
+Hemos sido autorizados por los responsables de la Sociedad con motivo de la revisión de las Cuentas Anuales correspondientes al ejercicio terminado a 31 de diciembre de 2025.
+
+Os rogamos que nos contesten a la petición de información contenida en el archivo adjunto, mediante contestación al presente correo electrónico.
+
+Muchas gracias por su colaboración.</textarea>
 </p>
 
 <p>
@@ -163,6 +173,16 @@ text-align:center;
 import { upload } from "https://esm.sh/@vercel/blob/client"
 
 let pdfFiles = []
+
+window.togglePdfList = function(){
+
+const container = document.getElementById("pdfContainer")
+
+container.style.display = container.style.display === "none"
+? "block"
+: "none"
+
+}
 
 function setupDropZone(zoneId, listId){
 
