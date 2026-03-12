@@ -13,6 +13,8 @@ from services.auth_service import autenticar_usuario
 from services.user_service import obtener_usuarios, crear_usuario, eliminar_usuario
 from fastapi.staticfiles import StaticFiles
 import os
+import json
+import requests
 
 from database.db import engine
 from database.models import Base, crear_admin_inicial
@@ -22,7 +24,6 @@ crear_admin_inicial()
 
 app = FastAPI()
 
-# activar carpeta static para CSS / JS / imágenes
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
@@ -33,8 +34,33 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 
 UPLOAD_FOLDER = "/tmp/uploads"
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+# ---------------------------------------------------------
+# DESCARGAR PDF DESDE BLOB
+# ---------------------------------------------------------
+
+def descargar_blob_privado(url):
+
+    token = os.getenv("BLOB_READ_WRITE_TOKEN")
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    r = requests.get(url, headers=headers)
+
+    if r.status_code != 200:
+        raise Exception("No se pudo descargar el PDF desde Blob")
+
+    filename = url.split("/")[-1]
+    temp_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    with open(temp_path, "wb") as f:
+        f.write(r.content)
+
+    return temp_path
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -115,15 +141,19 @@ async def configurar_smtp(
     return RedirectResponse("/", status_code=302)
 
 
+# ---------------------------------------------------------
+# ENVÍO DE CIRCULARIZACIÓN
+# ---------------------------------------------------------
+
 @app.post("/enviar")
 async def enviar_circularizacion(
     request: Request,
     background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
-    pdf_files: list[UploadFile] = File(...),
+    pdfs_blob_json: str = Form(...),
     asunto: str = Form(...),
     mensaje: str = Form(...),
-    cc: str = Form("")   # NUEVO CAMPO
+    cc: str = Form("")
 ):
 
     if "user" not in request.session:
@@ -144,25 +174,32 @@ async def enviar_circularizacion(
                 if c.strip()
             ]
 
-        # guardar excel
+        # -------------------------------------------------
+        # GUARDAR EXCEL
+        # -------------------------------------------------
+
         excel_filename = os.path.basename(excel_file.filename)
         excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
         with open(excel_path, "wb") as f:
             f.write(await excel_file.read())
 
-        # guardar PDFs
-        if pdf_files:
+        # -------------------------------------------------
+        # PROCESAR JSON DE PDFs SUBIDOS A BLOB
+        # -------------------------------------------------
 
-            for pdf in pdf_files:
+        pdfs_blob = json.loads(pdfs_blob_json)
 
-                pdf_filename = os.path.basename(pdf.filename)
-                pdf_path = os.path.join(UPLOAD_FOLDER, pdf_filename)
+        for pdf in pdfs_blob:
 
-                with open(pdf_path, "wb") as f:
-                    f.write(await pdf.read())
+            pdf_url = pdf["url"]
 
-        # leer excel
+            descargar_blob_privado(pdf_url)
+
+        # -------------------------------------------------
+        # LEER EXCEL
+        # -------------------------------------------------
+
         destinatarios = leer_excel(excel_path)
 
         registrar_circularizacion(
@@ -171,7 +208,10 @@ async def enviar_circularizacion(
             email_remitente
         )
 
-        # envío en segundo plano
+        # -------------------------------------------------
+        # ENVÍO EN SEGUNDO PLANO
+        # -------------------------------------------------
+
         background_tasks.add_task(
             procesar_circularizacion,
             destinatarios,
@@ -179,7 +219,7 @@ async def enviar_circularizacion(
             password,
             asunto,
             mensaje,
-            lista_cc   # PASAMOS LAS COPIAS
+            lista_cc
         )
 
         return templates.TemplateResponse(

@@ -9,3 +9,4 @@ flask
 psycopg[binary]
 sqlalchemy
 psycopg2-binary
+requests

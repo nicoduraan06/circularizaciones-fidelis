@@ -23,6 +23,10 @@ def enviar_un_correo(
 
     archivos_adjuntos = []
 
+    # asegurarnos de que documentos sea lista
+    if isinstance(documentos, str):
+        documentos = [doc.strip() for doc in documentos.split(",") if doc.strip()]
+
     # evitar PDFs duplicados
     documentos_unicos = list(set(documentos))
 

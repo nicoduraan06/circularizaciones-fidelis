@@ -4,7 +4,7 @@
 
 <h1>Nueva circularización</h1>
 
-<form action="/enviar" method="post" enctype="multipart/form-data">
+<form id="formCircularizacion" action="/enviar" method="post" enctype="multipart/form-data">
 
 <h3>Excel</h3>
 
@@ -57,25 +57,11 @@ Los archivos PDF que se adjunten deben tener <strong>exactamente el mismo nombre
 que el indicado en el Excel.
 </p>
 
-<p>
-Ejemplo:
-</p>
-
-<ul>
-<li>Excel → <code>factura_123.pdf</code></li>
-<li>Archivo subido → <code>factura_123.pdf</code></li>
-</ul>
-
-<p>
-Si los nombres no coinciden exactamente, el sistema no podrá encontrar el documento
-y el correo se enviará sin ese archivo.
-</p>
-
 </div>
 
 <div class="drop-zone" id="pdfDrop">
 <p>Arrastra aquí los PDFs o haz click</p>
-<input type="file" name="pdf_files" multiple accept=".pdf" hidden>
+<input type="file" multiple accept=".pdf" hidden>
 </div>
 
 <ul id="pdfList"></ul>
@@ -101,6 +87,9 @@ y el correo se enviará sin ese archivo.
 <input type="text" name="cc" placeholder="correo1@empresa.com, correo2@empresa.com">
 </p>
 
+<!-- NUEVO -->
+<input type="hidden" name="pdfs_blob_json" id="pdfs_blob_json">
+
 <button type="button" onclick="confirmarEnvio()">Enviar circularización</button>
 
 </form>
@@ -122,7 +111,6 @@ y el correo se enviará sin ese archivo.
 </div>
 
 </div>
-
 
 <style>
 
@@ -171,8 +159,9 @@ text-align:center;
 
 </style>
 
+<script type="module">
 
-<script>
+import { upload } from "https://esm.sh/@vercel/blob/client"  // NUEVO
 
 let pdfFiles = []
 
@@ -248,14 +237,6 @@ renderPdfList()
 
 function updatePdfInput(){
 
-const input = document.querySelector("#pdfDrop input")
-
-const dataTransfer = new DataTransfer()
-
-pdfFiles.forEach(file => dataTransfer.items.add(file))
-
-input.files = dataTransfer.files
-
 document.getElementById("pdfInfo").innerText =
 "PDFs cargados: " + pdfFiles.length
 
@@ -321,10 +302,8 @@ function clearPDFs(){
 
 pdfFiles = []
 
-const input=document.querySelector("#pdfDrop input")
 const list=document.getElementById("pdfList")
 
-input.value=""
 list.innerHTML=""
 
 document.getElementById("pdfInfo").innerText=""
@@ -370,9 +349,41 @@ document.getElementById("confirmModal").style.display="none"
 
 }
 
-function enviarFormulario(){
+// NUEVO
+async function subirPdfsABlob(){
 
-document.querySelector("form").submit()
+const pdfsSubidos = []
+
+for(const file of pdfFiles){
+
+const blob = await upload(file.name, file, {
+access: "private",
+handleUploadUrl: "/api/blob-upload"
+})
+
+pdfsSubidos.push({
+nombre:file.name,
+url:blob.url,
+pathname:blob.pathname
+})
+
+}
+
+return pdfsSubidos
+
+}
+
+// MODIFICADO
+async function enviarFormulario(){
+
+document.getElementById("confirmModal").style.display="none"
+
+const pdfsBlob = await subirPdfsABlob()
+
+document.getElementById("pdfs_blob_json").value =
+JSON.stringify(pdfsBlob)
+
+document.getElementById("formCircularizacion").submit()
 
 }
 
