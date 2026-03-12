@@ -15,6 +15,7 @@ export default async function handler(req, res) {
       onBeforeGenerateToken: async (pathname) => {
         return {
           allowedContentTypes: ["application/pdf"],
+          addRandomSuffix: true, // evita conflictos cuando el archivo ya existe
           tokenPayload: JSON.stringify({ pathname })
         };
       },
