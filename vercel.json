@@ -1,5 +1,14 @@
 {
+  "functions": {
+    "api/blob-upload.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
+    {
+      "src": "^/api/blob-upload$",
+      "dest": "/api/blob-upload.js"
+    },
     {
       "src": "/(.*)",
       "dest": "api/index.py"
