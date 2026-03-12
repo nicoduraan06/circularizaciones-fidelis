@@ -8,12 +8,10 @@ export default async function handler(req, res) {
 
   try {
 
-    const body = req.body;
-
     const jsonResponse = await handleUpload({
-      body,
       request: req,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      body: req.body,
+      token: process.env.BLOB_READ_WRITE_TOKEN
     });
 
     return res.status(200).json(jsonResponse);
@@ -23,8 +21,9 @@ export default async function handler(req, res) {
     console.error("Blob upload error:", error);
 
     return res.status(500).json({
-      error: "Error generating upload token",
+      error: "Error generating upload token"
     });
 
   }
+
 }
