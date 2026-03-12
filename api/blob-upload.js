@@ -1,40 +1,34 @@
-import { handleUpload } from '@vercel/blob';
+import { put } from '@vercel/blob';
 
 export default async function handler(req, res) {
 
-  const body = req.body;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
 
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
+    const filename = req.headers['x-vercel-filename'];
+    const contentType = req.headers['content-type'];
 
-      onBeforeGenerateToken: async (pathname) => {
-
-        return {
-          allowedContentTypes: ['application/pdf'],
-          tokenPayload: JSON.stringify({
-            pathname
-          })
-        };
-
-      },
-
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log("Upload completado:", blob, tokenPayload);
+    const blob = await put(
+      filename,
+      req,
+      {
+        access: 'private',
+        contentType,
+        token: process.env.BLOB_READ_WRITE_TOKEN
       }
+    );
 
-    });
-
-    return res.status(200).json(jsonResponse);
+    return res.status(200).json(blob);
 
   } catch (error) {
 
-    console.error(error);
+    console.error("Error subiendo a Blob:", error);
 
-    return res.status(400).json({
-      error: 'Error en subida a Blob'
+    return res.status(500).json({
+      error: "Error subiendo archivo a Blob"
     });
 
   }
