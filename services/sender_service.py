@@ -9,6 +9,26 @@ from services.error_logger_service import registrar_error
 UPLOAD_FOLDER = "/tmp/uploads"
 
 
+def buscar_pdf_real(nombre_pdf):
+    """
+    Busca el PDF real en /tmp/uploads incluso si Vercel Blob
+    le ha añadido un sufijo aleatorio.
+    """
+
+    if not os.path.exists(UPLOAD_FOLDER):
+        return None
+
+    nombre_base = nombre_pdf.replace(".pdf", "")
+
+    for archivo in os.listdir(UPLOAD_FOLDER):
+
+        if archivo.startswith(nombre_base) and archivo.endswith(".pdf"):
+
+            return os.path.join(UPLOAD_FOLDER, archivo)
+
+    return None
+
+
 def enviar_un_correo(
         d,
         email_remitente,
@@ -18,7 +38,6 @@ def enviar_un_correo(
         cc
 ):
 
-    # --- MODIFICACIÓN ---
     # permitir múltiples correos separados por coma o punto y coma
     emails = [
         e.strip()
@@ -39,17 +58,17 @@ def enviar_un_correo(
 
     for doc in documentos_unicos:
 
-        ruta_pdf = os.path.join(UPLOAD_FOLDER, doc)
+        ruta_pdf = buscar_pdf_real(doc)
 
-        if os.path.exists(ruta_pdf):
+        if ruta_pdf:
             archivos_adjuntos.append(ruta_pdf)
         else:
-            print(f"⚠ PDF no encontrado: {ruta_pdf}")
+            print(f"⚠ PDF no encontrado para: {doc}")
 
     try:
 
         print(f"📧 Enviando correo a: {emails}")
-        print(f"📎 Adjuntos: {archivos_adjuntos}")
+        print(f"📎 Adjuntos encontrados: {archivos_adjuntos}")
 
         enviar_correo(
             email_remitente,
