@@ -87,7 +87,6 @@ que el indicado en el Excel.
 <input type="text" name="cc" placeholder="correo1@empresa.com, correo2@empresa.com">
 </p>
 
-<!-- NUEVO -->
 <input type="hidden" name="pdfs_blob_json" id="pdfs_blob_json">
 
 <button type="button" onclick="confirmarEnvio()">Enviar circularización</button>
@@ -161,7 +160,7 @@ text-align:center;
 
 <script type="module">
 
-import { upload } from "https://esm.sh/@vercel/blob/client"  // NUEVO
+import { upload } from "https://esm.sh/@vercel/blob/client"
 
 let pdfFiles = []
 
@@ -330,7 +329,7 @@ document.getElementById("excelInfo").innerText =
 setupDropZone("excelDrop","excelList")
 setupDropZone("pdfDrop","pdfList")
 
-function confirmarEnvio(){
+window.confirmarEnvio = function(){
 
 const destinatarios = document.getElementById("excelInfo").innerText || "Destinatarios no detectados"
 
@@ -343,13 +342,12 @@ document.getElementById("confirmModal").style.display="flex"
 
 }
 
-function cerrarModal(){
+window.cerrarModal = function(){
 
 document.getElementById("confirmModal").style.display="none"
 
 }
 
-// NUEVO
 async function subirPdfsABlob(){
 
 const pdfsSubidos = []
@@ -373,8 +371,7 @@ return pdfsSubidos
 
 }
 
-// MODIFICADO
-async function enviarFormulario(){
+window.enviarFormulario = async function(){
 
 document.getElementById("confirmModal").style.display="none"
 
