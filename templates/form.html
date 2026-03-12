@@ -78,14 +78,14 @@ que el indicado en el Excel.
 
 <p>
 <label>Asunto:</label><br>
-<input type="text" name="asunto" value="Solicitud de Información para Auditoría de Cuentas de la entidad">
+<input type="text" name="asunto" value="Solicitud de Información para Auditoría de Cuentas de la entidad 'INDIQUE AQUI EL NOMBRE DE LA ENTIDAD'">
 </p>
 
 <p>
 <label>Mensaje:</label><br>
 <textarea name="mensaje" rows="8" cols="60">Muy Señores nuestros:
 
-Hemos sido autorizados por los responsables de la Sociedad con motivo de la revisión de las Cuentas Anuales correspondientes al ejercicio terminado a 31 de diciembre de 2025.
+Hemos sido autorizados por los responsables de la Sociedad 'INDIQUE AQUI EL NOMBRE DE LA ENTIDAD' con motivo de la revisión de las Cuentas Anuales correspondientes al ejercicio terminado a 31 de diciembre de 2025.
 
 Os rogamos que nos contesten a la petición de información contenida en el archivo adjunto, mediante contestación al presente correo electrónico.
 
@@ -305,7 +305,7 @@ list.appendChild(li)
 
 }
 
-function clearExcel(){
+window.clearExcel = function(){
 
 const input=document.querySelector("#excelDrop input")
 const list=document.getElementById("excelList")
@@ -317,7 +317,7 @@ document.getElementById("excelInfo").innerText=""
 
 }
 
-function clearPDFs(){
+window.clearPDFs = function(){
 
 pdfFiles = []
 
