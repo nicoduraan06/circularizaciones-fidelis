@@ -9,9 +9,20 @@ export default async function handler(req, res) {
   try {
 
     const jsonResponse = await handleUpload({
-      request: req,
       body: req.body,
-      token: process.env.BLOB_READ_WRITE_TOKEN
+      request: req,
+
+      onBeforeGenerateToken: async (pathname) => {
+        return {
+          allowedContentTypes: ["application/pdf"],
+          tokenPayload: JSON.stringify({ pathname })
+        };
+      },
+
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        console.log("Upload completado:", blob, tokenPayload);
+      }
+
     });
 
     return res.status(200).json(jsonResponse);
