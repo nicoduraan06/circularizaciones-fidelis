@@ -1,6 +1,7 @@
 import smtplib
 from email.message import EmailMessage
 import os
+import requests
 
 
 def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, cc=None):
@@ -31,14 +32,29 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
     # adjuntar archivos
     for archivo in archivos:
 
-        if not os.path.exists(archivo):
-            print(f"⚠ Archivo no encontrado: {archivo}")
-            continue
-
         try:
-            with open(archivo, "rb") as f:
-                contenido = f.read()
 
+            contenido = None
+
+            # intentar leer desde local
+            if os.path.exists(archivo):
+
+                with open(archivo, "rb") as f:
+                    contenido = f.read()
+
+            else:
+                # fallback: descargar desde Blob
+                print(f"⬇ Descargando archivo desde Blob: {archivo}")
+
+                response = requests.get(archivo)
+
+                if response.status_code == 200:
+                    contenido = response.content
+                else:
+                    print(f"⚠ No se pudo descargar el archivo: {archivo}")
+                    continue
+
+            # limpiar nombre generado por Vercel Blob
             nombre_archivo = os.path.basename(archivo).split("-")[0] + ".pdf"
 
             msg.add_attachment(
