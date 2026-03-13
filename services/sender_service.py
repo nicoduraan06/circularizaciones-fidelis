@@ -1,5 +1,7 @@
 import os
 import requests
+import urllib.parse
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.mailer import enviar_correo
@@ -10,20 +12,38 @@ from services.error_logger_service import registrar_error
 UPLOAD_FOLDER = "/tmp/uploads"
 
 
+def normalizar_nombre(nombre):
+
+    # decodificar caracteres tipo %20
+    nombre = urllib.parse.unquote(nombre)
+
+    # pasar a minúsculas
+    nombre = nombre.lower()
+
+    # eliminar tildes
+    nombre = unicodedata.normalize("NFKD", nombre)
+    nombre = nombre.encode("ascii", "ignore").decode("ascii")
+
+    return nombre
+
+
 def buscar_pdf_real(nombre_pdf):
     """
     Busca el PDF real en /tmp/uploads incluso si Vercel Blob
-    le ha añadido un sufijo aleatorio.
+    le ha añadido un sufijo aleatorio o codificación.
     """
 
     if not os.path.exists(UPLOAD_FOLDER):
         return None
 
-    nombre_base = nombre_pdf.replace(".pdf", "")
+    nombre_base = normalizar_nombre(nombre_pdf.replace(".pdf", ""))
 
     for archivo in os.listdir(UPLOAD_FOLDER):
 
-        if archivo.startswith(nombre_base) and archivo.endswith(".pdf"):
+        archivo_normalizado = normalizar_nombre(archivo)
+
+        if nombre_base in archivo_normalizado and archivo_normalizado.endswith(".pdf"):
+
             return os.path.join(UPLOAD_FOLDER, archivo)
 
     return None
@@ -36,8 +56,6 @@ def descargar_pdf_desde_blob(nombre_pdf):
 
     try:
 
-        # buscar la URL del blob guardada en entorno o construirla
-        # aquí asumimos que los blobs están en una ruta estándar
         base_blob_url = os.getenv("BLOB_PUBLIC_URL")
 
         if not base_blob_url:
