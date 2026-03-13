@@ -39,7 +39,7 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
             with open(archivo, "rb") as f:
                 contenido = f.read()
 
-            nombre_archivo = os.path.basename(archivo)
+            nombre_archivo = os.path.basename(archivo).split("-")[0] + ".pdf"
 
             msg.add_attachment(
                 contenido,
