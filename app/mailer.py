@@ -35,34 +35,35 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
         try:
 
+            # ahora archivo viene como (ruta, nombre_original)
+            if isinstance(archivo, tuple):
+                ruta_archivo, nombre_original = archivo
+            else:
+                ruta_archivo = archivo
+                nombre_original = os.path.basename(archivo)
+
             contenido = None
 
             # intentar leer desde local
-            if os.path.exists(archivo):
+            if os.path.exists(ruta_archivo):
 
-                with open(archivo, "rb") as f:
+                with open(ruta_archivo, "rb") as f:
                     contenido = f.read()
 
             else:
                 # fallback: descargar desde Blob
-                print(f"⬇ Descargando archivo desde Blob: {archivo}")
+                print(f"⬇ Descargando archivo desde Blob: {ruta_archivo}")
 
-                response = requests.get(archivo)
+                response = requests.get(ruta_archivo)
 
                 if response.status_code == 200:
                     contenido = response.content
                 else:
-                    print(f"⚠ No se pudo descargar el archivo: {archivo}")
+                    print(f"⚠ No se pudo descargar el archivo: {ruta_archivo}")
                     continue
 
-            # limpiar nombre generado por Vercel Blob
-            nombre_archivo = os.path.basename(archivo)
-
-            # eliminar sufijo aleatorio de blob
-            nombre_archivo = nombre_archivo.split("-")[0] + ".pdf"
-
-            # decodificar %20 y caracteres especiales
-            nombre_archivo = urllib.parse.unquote(nombre_archivo)
+            # decodificar caracteres (%20 etc)
+            nombre_archivo = urllib.parse.unquote(nombre_original)
 
             msg.add_attachment(
                 contenido,

@@ -2,6 +2,7 @@ import os
 import requests
 import urllib.parse
 import unicodedata
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.mailer import enviar_correo
@@ -13,37 +14,46 @@ UPLOAD_FOLDER = "/tmp/uploads"
 
 
 def normalizar_nombre(nombre):
+    """
+    Normaliza nombres de archivos para comparación robusta
+    sin importar espacios, tildes o caracteres especiales.
+    """
 
-    # decodificar caracteres tipo %20
     nombre = urllib.parse.unquote(nombre)
-
-    # pasar a minúsculas
     nombre = nombre.lower()
 
-    # eliminar tildes
+    # eliminar extensión
+    nombre = nombre.replace(".pdf", "")
+
+    # eliminar acentos
     nombre = unicodedata.normalize("NFKD", nombre)
     nombre = nombre.encode("ascii", "ignore").decode("ascii")
+
+    # eliminar cualquier carácter no alfanumérico
+    nombre = re.sub(r"[^a-z0-9]", "", nombre)
 
     return nombre
 
 
 def buscar_pdf_real(nombre_pdf):
     """
-    Busca el PDF real en /tmp/uploads incluso si Vercel Blob
-    le ha añadido un sufijo aleatorio o codificación.
+    Busca el PDF real en /tmp/uploads incluso si:
+    - tiene sufijo aleatorio de Blob
+    - tiene espacios
+    - tiene caracteres especiales
+    - tiene nombres muy largos
     """
 
     if not os.path.exists(UPLOAD_FOLDER):
         return None
 
-    nombre_base = normalizar_nombre(nombre_pdf.replace(".pdf", ""))
+    nombre_normalizado = normalizar_nombre(nombre_pdf)
 
     for archivo in os.listdir(UPLOAD_FOLDER):
 
         archivo_normalizado = normalizar_nombre(archivo)
 
-        if nombre_base in archivo_normalizado and archivo_normalizado.endswith(".pdf"):
-
+        if nombre_normalizado in archivo_normalizado:
             return os.path.join(UPLOAD_FOLDER, archivo)
 
     return None
@@ -67,9 +77,9 @@ def descargar_pdf_desde_blob(nombre_pdf):
 
         if response.status_code == 200:
 
-            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_pdf)
-
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_pdf)
 
             with open(ruta_local, "wb") as f:
                 f.write(response.content)
@@ -80,7 +90,6 @@ def descargar_pdf_desde_blob(nombre_pdf):
             print(f"⚠ No se pudo descargar {nombre_pdf} desde Blob")
 
     except Exception as e:
-
         print(f"❌ Error descargando {nombre_pdf}: {e}")
 
     return None
@@ -121,7 +130,7 @@ def enviar_un_correo(
             ruta_pdf = descargar_pdf_desde_blob(doc)
 
         if ruta_pdf:
-            archivos_adjuntos.append(ruta_pdf)
+            archivos_adjuntos.append((ruta_pdf, doc))  # guardamos también el nombre original
         else:
             print(f"❌ No se pudo obtener el PDF: {doc}")
 
