@@ -1,4 +1,5 @@
 import os
+import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.mailer import enviar_correo
@@ -23,8 +24,46 @@ def buscar_pdf_real(nombre_pdf):
     for archivo in os.listdir(UPLOAD_FOLDER):
 
         if archivo.startswith(nombre_base) and archivo.endswith(".pdf"):
-
             return os.path.join(UPLOAD_FOLDER, archivo)
+
+    return None
+
+
+def descargar_pdf_desde_blob(nombre_pdf):
+    """
+    Si el archivo no está en /tmp, intenta descargarlo desde Blob.
+    """
+
+    try:
+
+        # buscar la URL del blob guardada en entorno o construirla
+        # aquí asumimos que los blobs están en una ruta estándar
+        base_blob_url = os.getenv("BLOB_PUBLIC_URL")
+
+        if not base_blob_url:
+            return None
+
+        url = f"{base_blob_url}/{nombre_pdf}"
+
+        response = requests.get(url, timeout=20)
+
+        if response.status_code == 200:
+
+            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_pdf)
+
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+            with open(ruta_local, "wb") as f:
+                f.write(response.content)
+
+            return ruta_local
+
+        else:
+            print(f"⚠ No se pudo descargar {nombre_pdf} desde Blob")
+
+    except Exception as e:
+
+        print(f"❌ Error descargando {nombre_pdf}: {e}")
 
     return None
 
@@ -38,7 +77,6 @@ def enviar_un_correo(
         cc
 ):
 
-    # permitir múltiples correos separados por coma o punto y coma
     emails = [
         e.strip()
         for e in d["email"].replace(";", ",").split(",")
@@ -49,21 +87,25 @@ def enviar_un_correo(
 
     archivos_adjuntos = []
 
-    # asegurarnos de que documentos sea lista
     if isinstance(documentos, str):
         documentos = [doc.strip() for doc in documentos.split(",") if doc.strip()]
 
-    # evitar PDFs duplicados
     documentos_unicos = list(set(documentos))
 
     for doc in documentos_unicos:
 
         ruta_pdf = buscar_pdf_real(doc)
 
+        if not ruta_pdf:
+
+            print(f"⚠ PDF no encontrado en /tmp: {doc}, intentando descargar desde Blob")
+
+            ruta_pdf = descargar_pdf_desde_blob(doc)
+
         if ruta_pdf:
             archivos_adjuntos.append(ruta_pdf)
         else:
-            print(f"⚠ PDF no encontrado para: {doc}")
+            print(f"❌ No se pudo obtener el PDF: {doc}")
 
     try:
 
@@ -106,13 +148,11 @@ def procesar_circularizacion(
 
     total = len(destinatarios)
 
-    # iniciar progreso
     iniciar_progreso(total)
 
     errores = []
     enviados_ok = []
 
-    # paralelismo controlado para SMTP
     max_workers = 2
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -137,12 +177,9 @@ def procesar_circularizacion(
                 resultado = future.result()
 
                 if resultado["error"]:
-
                     errores.append(resultado["email"])
                     incrementar_errores()
-
                 else:
-
                     enviados_ok.append(resultado["email"])
 
                 incrementar_enviados()
@@ -156,8 +193,6 @@ def procesar_circularizacion(
                 incrementar_enviados()
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
-
-    # -------- NUEVO RESUMEN DE ENVÍO --------
 
     asunto_resumen = "Resultado de circularización"
 
