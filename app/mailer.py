@@ -2,6 +2,7 @@ import smtplib
 from email.message import EmailMessage
 import os
 import requests
+import urllib.parse
 
 
 def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, cc=None):
@@ -55,7 +56,13 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
                     continue
 
             # limpiar nombre generado por Vercel Blob
-            nombre_archivo = os.path.basename(archivo).split("-")[0] + ".pdf"
+            nombre_archivo = os.path.basename(archivo)
+
+            # eliminar sufijo aleatorio de blob
+            nombre_archivo = nombre_archivo.split("-")[0] + ".pdf"
+
+            # decodificar %20 y caracteres especiales
+            nombre_archivo = urllib.parse.unquote(nombre_archivo)
 
             msg.add_attachment(
                 contenido,
