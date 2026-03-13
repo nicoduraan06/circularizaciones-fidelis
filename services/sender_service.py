@@ -110,6 +110,7 @@ def procesar_circularizacion(
     iniciar_progreso(total)
 
     errores = []
+    enviados_ok = []
 
     # paralelismo controlado para SMTP
     max_workers = 2
@@ -140,45 +141,59 @@ def procesar_circularizacion(
                     errores.append(resultado["email"])
                     incrementar_errores()
 
+                else:
+
+                    enviados_ok.append(resultado["email"])
+
                 incrementar_enviados()
 
             except Exception as e:
 
                 print("❌ Error inesperado en worker:", e)
 
+                errores.append("Error inesperado")
                 incrementar_errores()
                 incrementar_enviados()
 
     print("===== FIN DE LA CIRCULARIZACIÓN =====")
 
-    # enviar resumen al remitente
-    if errores:
+    # -------- NUEVO RESUMEN DE ENVÍO --------
 
-        asunto_resumen = "Resultado de circularización"
+    asunto_resumen = "Resultado de circularización"
 
-        mensaje_resumen = f"""
-La circularización ha finalizado.
+    lista_ok = "\n".join([f"✔ {e}" for e in enviados_ok])
+    lista_error = "\n".join([f"❌ {e}" for e in errores])
 
-Correos enviados: {total - len(errores)}
+    mensaje_resumen = f"""
+La circularización ha finalizado correctamente.
+
+RESULTADO DEL ENVÍO
+
+Correos enviados correctamente:
+{lista_ok if lista_ok else "Ninguno"}
+
+Correos con error:
+{lista_error if lista_error else "Ninguno"}
+
+RESUMEN
+
+Total destinatarios: {total}
+Enviados correctamente: {len(enviados_ok)}
 Errores detectados: {len(errores)}
-
-No se pudieron enviar los siguientes correos:
-
-{chr(10).join(errores)}
 """
 
-        try:
+    try:
 
-            enviar_correo(
-                email_remitente,
-                password,
-                email_remitente,
-                asunto_resumen,
-                mensaje_resumen,
-                [],
-                cc
-            )
+        enviar_correo(
+            email_remitente,
+            password,
+            email_remitente,
+            asunto_resumen,
+            mensaje_resumen,
+            [],
+            cc
+        )
 
-        except Exception as e:
+    except Exception as e:
 
-            print("❌ Error enviando email resumen:", e)
+        print("❌ Error enviando email resumen:", e)
