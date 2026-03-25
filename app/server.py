@@ -31,10 +31,16 @@ app.add_middleware(
     secret_key="clave-super-secreta"
 )
 
+from jinja2 import Environment, FileSystemLoader
+
 templates = Jinja2Templates(directory="templates")
 
-# 🚀 SOLUCIÓN DEFINITIVA VERCEL + JINJA
-templates.env.cache = None
+# 💥 SOLUCIÓN FUERTE (evita cache interna completamente)
+templates.env = Environment(
+    loader=FileSystemLoader("templates"),
+    auto_reload=True,
+    cache_size=0
+)
 
 UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
