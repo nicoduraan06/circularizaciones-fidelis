@@ -4,3 +4,11 @@ uploads/
 *.pyc
 .env
 .idea/
+
+# Node (muy importante)
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
