@@ -35,7 +35,7 @@ from jinja2 import Environment, FileSystemLoader
 
 templates = Jinja2Templates(directory="templates")
 
-# 💥 SOLUCIÓN FUERTE (evita cache interna completamente)
+# 💥 mantenemos tu solución anti-cache (correcta)
 templates.env = Environment(
     loader=FileSystemLoader("templates"),
     auto_reload=True,
@@ -81,7 +81,7 @@ def home(request: Request):
     if "smtp_password" not in request.session:
         return RedirectResponse("/configurar_smtp")
 
-    return templates.TemplateResponse("form.html", {"request": request})
+    return templates.TemplateResponse(request, "form.html", {})
 
 
 @app.get("/historial", response_class=HTMLResponse)
@@ -102,9 +102,9 @@ def historial(request: Request, buscar: str = ""):
     registros = sorted(registros, key=lambda r: r["fecha"], reverse=True)
 
     return templates.TemplateResponse(
+        request,
         "historial.html",
         {
-            "request": request,
             "registros": registros,
             "buscar": buscar
         }
@@ -117,9 +117,9 @@ def dashboard(request: Request):
     stats = obtener_estadisticas()
 
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
-            "request": request,
             "total_circularizaciones": stats["total_circularizaciones"],
             "total_destinatarios": stats["total_destinatarios"],
             "ultimos": stats["ultimos"]
@@ -134,8 +134,9 @@ def configurar_smtp_page(request: Request):
         return RedirectResponse("/login")
 
     return templates.TemplateResponse(
+        request,
         "configurar_smtp.html",
-        {"request": request}
+        {}
     )
 
 
@@ -173,7 +174,6 @@ async def enviar_circularizacion(
         email_remitente = request.session.get("email")
         password = request.session.get("smtp_password")
 
-        # convertir CC en lista
         lista_cc = []
 
         if cc:
@@ -183,31 +183,17 @@ async def enviar_circularizacion(
                 if c.strip()
             ]
 
-        # -------------------------------------------------
-        # GUARDAR EXCEL
-        # -------------------------------------------------
-
         excel_filename = os.path.basename(excel_file.filename)
         excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
         with open(excel_path, "wb") as f:
             f.write(await excel_file.read())
 
-        # -------------------------------------------------
-        # PROCESAR JSON DE PDFs SUBIDOS A BLOB
-        # -------------------------------------------------
-
         pdfs_blob = json.loads(pdfs_blob_json)
 
         for pdf in pdfs_blob:
-
             pdf_url = pdf["url"]
-
             descargar_blob_privado(pdf_url)
-
-        # -------------------------------------------------
-        # LEER EXCEL
-        # -------------------------------------------------
 
         destinatarios = leer_excel(excel_path)
 
@@ -216,10 +202,6 @@ async def enviar_circularizacion(
             len(destinatarios),
             email_remitente
         )
-
-        # -------------------------------------------------
-        # ENVÍO EN SEGUNDO PLANO
-        # -------------------------------------------------
 
         background_tasks.add_task(
             procesar_circularizacion,
@@ -232,10 +214,9 @@ async def enviar_circularizacion(
         )
 
         return templates.TemplateResponse(
+            request,
             "resultado.html",
-            {
-                "request": request
-            }
+            {}
         )
 
     except Exception as e:
@@ -260,9 +241,9 @@ def ver_errores(request: Request):
     errores = leer_errores()
 
     return templates.TemplateResponse(
+        request,
         "errores.html",
         {
-            "request": request,
             "errores": errores
         }
     )
@@ -280,9 +261,9 @@ def admin_panel(request: Request):
     stats = obtener_estadisticas()
 
     return templates.TemplateResponse(
+        request,
         "admin.html",
         {
-            "request": request,
             "stats": stats
         }
     )
@@ -292,9 +273,9 @@ def admin_panel(request: Request):
 def login_page(request: Request):
 
     return templates.TemplateResponse(
+        request,
         "login.html",
         {
-            "request": request,
             "login_error": False
         }
     )
@@ -311,9 +292,9 @@ async def login(
 
     if not usuario:
         return templates.TemplateResponse(
+            request,
             "login.html",
             {
-                "request": request,
                 "login_error": True
             }
         )
@@ -339,9 +320,9 @@ def ver_usuarios(request: Request):
     usuarios = obtener_usuarios()
 
     return templates.TemplateResponse(
+        request,
         "usuarios.html",
         {
-            "request": request,
             "usuarios": usuarios
         }
     )
