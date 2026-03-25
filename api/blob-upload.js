@@ -14,8 +14,12 @@ export default async function handler(req, res) {
 
       onBeforeGenerateToken: async (pathname) => {
         return {
-          allowedContentTypes: ["application/pdf"],
-          addRandomSuffix: true, // evita conflictos cuando el archivo ya existe
+          allowedContentTypes: [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel"
+          ],
+          addRandomSuffix: true,
           tokenPayload: JSON.stringify({ pathname })
         };
       },
@@ -23,7 +27,6 @@ export default async function handler(req, res) {
       onUploadCompleted: async ({ blob, tokenPayload }) => {
         console.log("Upload completado:", blob, tokenPayload);
       }
-
     });
 
     return res.status(200).json(jsonResponse);
@@ -37,5 +40,4 @@ export default async function handler(req, res) {
     });
 
   }
-
 }

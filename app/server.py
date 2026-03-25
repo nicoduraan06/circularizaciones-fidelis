@@ -35,7 +35,7 @@ from jinja2 import Environment, FileSystemLoader
 
 templates = Jinja2Templates(directory="templates")
 
-# 💥 mantenemos tu solución anti-cache (correcta)
+# 🔥 evitar problemas de cache en Vercel
 templates.env = Environment(
     loader=FileSystemLoader("templates"),
     auto_reload=True,
@@ -47,7 +47,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # ---------------------------------------------------------
-# DESCARGAR PDF DESDE BLOB
+# DESCARGAR DOCUMENTO DESDE BLOB
 # ---------------------------------------------------------
 
 def descargar_blob_privado(url):
@@ -61,7 +61,7 @@ def descargar_blob_privado(url):
     r = requests.get(url, headers=headers)
 
     if r.status_code != 200:
-        raise Exception("No se pudo descargar el PDF desde Blob")
+        raise Exception("No se pudo descargar el archivo desde Blob")
 
     filename = url.split("/")[-1]
     temp_path = os.path.join(UPLOAD_FOLDER, filename)
@@ -71,6 +71,10 @@ def descargar_blob_privado(url):
 
     return temp_path
 
+
+# ---------------------------------------------------------
+# VISTAS
+# ---------------------------------------------------------
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -160,7 +164,7 @@ async def enviar_circularizacion(
     request: Request,
     background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
-    pdfs_blob_json: str = Form(...),
+    documentos_blob_json: str = Form(...),   # 🔥 CAMBIO CLAVE
     asunto: str = Form(...),
     mensaje: str = Form(...),
     cc: str = Form("")
@@ -183,18 +187,27 @@ async def enviar_circularizacion(
                 if c.strip()
             ]
 
+        # -------------------------------
+        # GUARDAR EXCEL
+        # -------------------------------
         excel_filename = os.path.basename(excel_file.filename)
         excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
 
         with open(excel_path, "wb") as f:
             f.write(await excel_file.read())
 
-        pdfs_blob = json.loads(pdfs_blob_json)
+        # -------------------------------
+        # PROCESAR DOCUMENTOS
+        # -------------------------------
+        documentos_blob = json.loads(documentos_blob_json)
 
-        for pdf in pdfs_blob:
-            pdf_url = pdf["url"]
-            descargar_blob_privado(pdf_url)
+        for doc in documentos_blob:
+            doc_url = doc["url"]
+            descargar_blob_privado(doc_url)
 
+        # -------------------------------
+        # LEER EXCEL
+        # -------------------------------
         destinatarios = leer_excel(excel_path)
 
         registrar_circularizacion(
@@ -203,6 +216,9 @@ async def enviar_circularizacion(
             email_remitente
         )
 
+        # -------------------------------
+        # ENVÍO EN SEGUNDO PLANO
+        # -------------------------------
         background_tasks.add_task(
             procesar_circularizacion,
             destinatarios,

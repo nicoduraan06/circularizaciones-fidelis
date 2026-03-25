@@ -17,25 +17,20 @@
 <ul>
 <li><strong>DESTINATARIO</strong> → nombre de la empresa o persona</li>
 <li><strong>EMAIL</strong> → dirección de correo del destinatario</li>
-<li><strong>DOCUMENTOS</strong> → nombre del PDF que se enviará</li>
+<li><strong>DOCUMENTOS</strong> → nombre exacto del archivo que se enviará</li>
 </ul>
 
 <p>Si hay varios documentos deben separarse con comas.</p>
 
-<p>Si existe alguna columna más aparte de las mencionadas, no habría ningún problema siempre que estén las tres requeridas.</p>
+<p>El Excel puede empezar más abajo y no necesariamente en la primera fila, siempre que exista una fila con los encabezados.</p>
 
-<p><strong>Ejemplo:</strong></p>
-
-<ul>
-<li>Empresa Alfa | alfa@empresa.com | contrato.pdf</li>
-<li>Empresa Beta | beta@empresa.com | contrato.pdf, factura.pdf</li>
-</ul>
+<p>Se admiten como adjuntos archivos <strong>PDF y Excel</strong>.</p>
 
 </div>
 
 <div class="drop-zone" id="excelDrop">
 <p>Arrastra aquí el Excel o haz click</p>
-<input type="file" name="excel_file" accept=".xlsx" hidden>
+<input type="file" name="excel_file" accept=".xlsx,.xls" hidden>
 </div>
 
 <ul id="excelList"></ul>
@@ -46,33 +41,37 @@
 
 <br><br>
 
-<h3>PDFs</h3>
+<h3>Documentos adjuntos</h3>
 
 <div style="background:#fff3cd;border:1px solid #ffeeba;padding:15px;margin-bottom:15px;border-radius:6px">
 
 <strong>⚠ Aviso importante</strong>
 
 <p>
-Los archivos PDF que se adjunten deben tener <strong>exactamente el mismo nombre</strong>
+Los archivos adjuntos deben tener <strong>exactamente el mismo nombre</strong>
 que el indicado en el Excel.
+</p>
+
+<p>
+Se permiten archivos <strong>PDF y Excel</strong>.
 </p>
 
 </div>
 
-<div class="drop-zone" id="pdfDrop">
-<p>Arrastra aquí los PDFs o haz click</p>
-<input type="file" multiple accept=".pdf" hidden>
+<div class="drop-zone" id="docsDrop">
+<p>Arrastra aquí los documentos o haz click</p>
+<input type="file" multiple accept=".pdf,.xlsx,.xls" hidden>
 </div>
 
-<p id="pdfInfo" style="font-weight:bold;"></p>
+<p id="docsInfo" style="font-weight:bold;"></p>
 
-<button type="button" onclick="togglePdfList()">Ver / Ocultar lista de PDFs</button>
+<button type="button" onclick="toggleDocsList()">Ver / Ocultar lista de documentos</button>
 
-<div id="pdfContainer" style="display:none; max-height:200px; overflow-y:auto; border:1px solid #ddd; margin-top:10px; padding:5px;">
-<ul id="pdfList"></ul>
+<div id="docsContainer" style="display:none; max-height:200px; overflow-y:auto; border:1px solid #ddd; margin-top:10px; padding:5px;">
+<ul id="docsList"></ul>
 </div>
 
-<button type="button" onclick="clearPDFs()">Limpiar PDFs</button>
+<button type="button" onclick="clearDocs()">Limpiar documentos</button>
 
 <br><br>
 
@@ -97,7 +96,7 @@ Muchas gracias por su colaboración.</textarea>
 <input type="text" name="cc" placeholder="correo1@empresa.com, correo2@empresa.com">
 </p>
 
-<input type="hidden" name="pdfs_blob_json" id="pdfs_blob_json">
+<input type="hidden" name="documentos_blob_json" id="documentos_blob_json">
 
 <button type="button" onclick="confirmarEnvio()">Enviar circularización</button>
 
@@ -110,7 +109,7 @@ Muchas gracias por su colaboración.</textarea>
 <h3>Confirmar envío</h3>
 
 <p id="confirmDestinatarios"></p>
-<p id="confirmPDFs"></p>
+<p id="confirmDocs"></p>
 
 <br>
 
@@ -122,7 +121,6 @@ Muchas gracias por su colaboración.</textarea>
 </div>
 
 <style>
-
 .drop-zone{
 border:2px dashed #aaa;
 padding:40px;
@@ -165,246 +163,188 @@ padding:30px;
 border-radius:8px;
 text-align:center;
 }
-
 </style>
 
 <script type="module">
-
 import { upload } from "https://esm.sh/@vercel/blob/client"
 
-let pdfFiles = []
+let docFiles = []
 
-window.togglePdfList = function(){
-
-const container = document.getElementById("pdfContainer")
-
-container.style.display = container.style.display === "none"
-? "block"
-: "none"
-
+window.toggleDocsList = function(){
+  const container = document.getElementById("docsContainer")
+  container.style.display = container.style.display === "none" ? "block" : "none"
 }
 
 function setupDropZone(zoneId, listId){
+  const zone = document.getElementById(zoneId)
+  const input = zone.querySelector("input")
+  const list = document.getElementById(listId)
 
-const zone = document.getElementById(zoneId)
-const input = zone.querySelector("input")
-const list = document.getElementById(listId)
+  zone.addEventListener("click", () => input.click())
 
-zone.addEventListener("click", () => input.click())
+  zone.addEventListener("dragover", (e)=>{
+    e.preventDefault()
+    zone.classList.add("dragover")
+  })
 
-zone.addEventListener("dragover", (e)=>{
-e.preventDefault()
-zone.classList.add("dragover")
-})
+  zone.addEventListener("dragleave", ()=>{
+    zone.classList.remove("dragover")
+  })
 
-zone.addEventListener("dragleave", ()=>{
-zone.classList.remove("dragover")
-})
+  zone.addEventListener("drop",(e)=>{
+    e.preventDefault()
+    zone.classList.remove("dragover")
 
-zone.addEventListener("drop",(e)=>{
+    if(zoneId === "docsDrop"){
+      addDocFiles(e.dataTransfer.files)
+    }else{
+      input.files = e.dataTransfer.files
+      updateFileList(list, input.files)
 
-e.preventDefault()
-zone.classList.remove("dragover")
+      if(input.files.length > 0){
+        analizarExcel(input.files[0])
+      }
+    }
+  })
 
-if(zoneId==="pdfDrop"){
+  input.addEventListener("change", ()=>{
+    if(zoneId === "docsDrop"){
+      addDocFiles(input.files)
+    }else{
+      updateFileList(list, input.files)
 
-addPdfFiles(e.dataTransfer.files)
-
-}else{
-
-input.files = e.dataTransfer.files
-updateFileList(list, input.files)
-
-if(input.files.length>0){
-analizarExcel(input.files[0])
+      if(input.files.length > 0){
+        analizarExcel(input.files[0])
+      }
+    }
+  })
 }
 
+function addDocFiles(files){
+  for(const file of files){
+    docFiles.push(file)
+  }
+
+  updateDocInput()
+  renderDocList()
 }
 
-})
-
-input.addEventListener("change", ()=>{
-
-if(zoneId==="pdfDrop"){
-
-addPdfFiles(input.files)
-
-}else{
-
-updateFileList(list, input.files)
-
-if(input.files.length>0){
-analizarExcel(input.files[0])
+function updateDocInput(){
+  document.getElementById("docsInfo").innerText =
+    "Documentos cargados: " + docFiles.length
 }
 
+function renderDocList(){
+  const list = document.getElementById("docsList")
+  list.innerHTML = ""
+
+  docFiles.forEach((file,index)=>{
+    const li = document.createElement("li")
+    li.innerHTML = `
+      ${file.name}
+      <button onclick="removeDoc(${index})" style="margin-left:10px;">❌</button>
+    `
+    list.appendChild(li)
+  })
 }
 
-})
-
-}
-
-function addPdfFiles(files){
-
-for(const file of files){
-pdfFiles.push(file)
-}
-
-updatePdfInput()
-renderPdfList()
-
-}
-
-function updatePdfInput(){
-
-document.getElementById("pdfInfo").innerText =
-"PDFs cargados: " + pdfFiles.length
-
-}
-
-function renderPdfList(){
-
-const list = document.getElementById("pdfList")
-
-list.innerHTML=""
-
-pdfFiles.forEach((file,index)=>{
-
-const li=document.createElement("li")
-
-li.innerHTML = `
-${file.name}
-<button onclick="removePdf(${index})" style="margin-left:10px;">❌</button>
-`
-
-list.appendChild(li)
-
-})
-
-}
-
-window.removePdf = function(index){
-
-pdfFiles.splice(index,1)
-
-updatePdfInput()
-renderPdfList()
-
+window.removeDoc = function(index){
+  docFiles.splice(index,1)
+  updateDocInput()
+  renderDocList()
 }
 
 function updateFileList(list, files){
+  list.innerHTML = ""
 
-list.innerHTML=""
-
-for(let i=0;i<files.length;i++){
-
-const li=document.createElement("li")
-li.innerText=files[i].name
-list.appendChild(li)
-
-}
-
+  for(let i=0;i<files.length;i++){
+    const li = document.createElement("li")
+    li.innerText = files[i].name
+    list.appendChild(li)
+  }
 }
 
 window.clearExcel = function(){
+  const input = document.querySelector("#excelDrop input")
+  const list = document.getElementById("excelList")
 
-const input=document.querySelector("#excelDrop input")
-const list=document.getElementById("excelList")
-
-input.value=""
-list.innerHTML=""
-
-document.getElementById("excelInfo").innerText=""
-
+  input.value = ""
+  list.innerHTML = ""
+  document.getElementById("excelInfo").innerText = ""
 }
 
-window.clearPDFs = function(){
-
-pdfFiles = []
-
-const list=document.getElementById("pdfList")
-
-list.innerHTML=""
-
-document.getElementById("pdfInfo").innerText=""
-
+window.clearDocs = function(){
+  docFiles = []
+  const list = document.getElementById("docsList")
+  list.innerHTML = ""
+  document.getElementById("docsInfo").innerText = ""
 }
 
 async function analizarExcel(file){
+  const formData = new FormData()
+  formData.append("excel_file", file)
 
-const formData = new FormData()
-formData.append("excel_file", file)
+  const response = await fetch("/analizar_excel", {
+    method:"POST",
+    body:formData
+  })
 
-const response = await fetch("/analizar_excel",{
-method:"POST",
-body:formData
-})
+  const data = await response.json()
 
-const data = await response.json()
-
-document.getElementById("excelInfo").innerText =
-"Destinatarios detectados: " + data.total_destinatarios
-
+  if (data.error) {
+    document.getElementById("excelInfo").innerText = "Error: " + data.error
+  } else {
+    document.getElementById("excelInfo").innerText =
+      "Destinatarios detectados: " + data.total_destinatarios
+  }
 }
 
 setupDropZone("excelDrop","excelList")
-setupDropZone("pdfDrop","pdfList")
+setupDropZone("docsDrop","docsList")
 
 window.confirmarEnvio = function(){
+  const destinatarios = document.getElementById("excelInfo").innerText || "Destinatarios no detectados"
+  const totalDocs = docFiles.length
 
-const destinatarios = document.getElementById("excelInfo").innerText || "Destinatarios no detectados"
+  document.getElementById("confirmDestinatarios").innerText = destinatarios
+  document.getElementById("confirmDocs").innerText = "Documentos cargados: " + totalDocs
 
-const totalPDF = pdfFiles.length
-
-document.getElementById("confirmDestinatarios").innerText = destinatarios
-document.getElementById("confirmPDFs").innerText = "PDFs cargados: " + totalPDF
-
-document.getElementById("confirmModal").style.display="flex"
-
+  document.getElementById("confirmModal").style.display = "flex"
 }
 
 window.cerrarModal = function(){
-
-document.getElementById("confirmModal").style.display="none"
-
+  document.getElementById("confirmModal").style.display = "none"
 }
 
-async function subirPdfsABlob(){
-
-  const uploads = pdfFiles.map(async (file) => {
+async function subirDocumentosABlob(){
+  const uploads = docFiles.map(async (file) => {
 
     const blob = await upload(file.name, file, {
       access: "private",
       handleUploadUrl: "/api/blob-upload",
       allowOverwrite: true
-    });
+    })
 
     return {
       nombre: file.name,
       url: blob.url,
       pathname: blob.pathname
-    };
+    }
+  })
 
-  });
-
-  const pdfsSubidos = await Promise.all(uploads);
-
-  return pdfsSubidos;
-
+  return await Promise.all(uploads)
 }
 
 window.enviarFormulario = async function(){
+  document.getElementById("confirmModal").style.display = "none"
 
-document.getElementById("confirmModal").style.display="none"
+  const docsBlob = await subirDocumentosABlob()
 
-const pdfsBlob = await subirPdfsABlob()
+  document.getElementById("documentos_blob_json").value =
+    JSON.stringify(docsBlob)
 
-document.getElementById("pdfs_blob_json").value =
-JSON.stringify(pdfsBlob)
-
-document.getElementById("formCircularizacion").submit()
-
+  document.getElementById("formCircularizacion").submit()
 }
-
 </script>
 
 {% endblock %}

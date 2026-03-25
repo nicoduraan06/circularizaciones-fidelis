@@ -9,7 +9,6 @@ from app.mailer import enviar_correo
 from services.progress_service import iniciar_progreso, incrementar_enviados, incrementar_errores
 from services.error_logger_service import registrar_error
 
-# carpeta temporal compatible con Vercel
 UPLOAD_FOLDER = "/tmp/uploads"
 
 
@@ -22,35 +21,34 @@ def normalizar_nombre(nombre):
     nombre = urllib.parse.unquote(nombre)
     nombre = nombre.lower()
 
-    # eliminar extensión
-    nombre = nombre.replace(".pdf", "")
+    # eliminar solo la última extensión
+    if "." in nombre:
+        nombre = ".".join(nombre.split(".")[:-1]) or nombre
 
-    # eliminar acentos
     nombre = unicodedata.normalize("NFKD", nombre)
     nombre = nombre.encode("ascii", "ignore").decode("ascii")
 
-    # eliminar cualquier carácter no alfanumérico
     nombre = re.sub(r"[^a-z0-9]", "", nombre)
 
     return nombre
 
 
-def buscar_pdf_real(nombre_pdf):
+def buscar_documento_real(nombre_documento):
     """
-    Busca el PDF real en /tmp/uploads incluso si:
+    Busca el archivo real en /tmp/uploads incluso si:
     - tiene sufijo aleatorio de Blob
     - tiene espacios
     - tiene caracteres especiales
     - tiene nombres muy largos
+    - no es PDF
     """
 
     if not os.path.exists(UPLOAD_FOLDER):
         return None
 
-    nombre_normalizado = normalizar_nombre(nombre_pdf)
+    nombre_normalizado = normalizar_nombre(nombre_documento)
 
     for archivo in os.listdir(UPLOAD_FOLDER):
-
         archivo_normalizado = normalizar_nombre(archivo)
 
         if nombre_normalizado in archivo_normalizado:
@@ -59,19 +57,18 @@ def buscar_pdf_real(nombre_pdf):
     return None
 
 
-def descargar_pdf_desde_blob(nombre_pdf):
+def descargar_documento_desde_blob(nombre_documento):
     """
     Si el archivo no está en /tmp, intenta descargarlo desde Blob.
     """
 
     try:
-
         base_blob_url = os.getenv("BLOB_PUBLIC_URL")
 
         if not base_blob_url:
             return None
 
-        url = f"{base_blob_url}/{nombre_pdf}"
+        url = f"{base_blob_url}/{nombre_documento}"
 
         response = requests.get(url, timeout=20)
 
@@ -79,18 +76,17 @@ def descargar_pdf_desde_blob(nombre_pdf):
 
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_pdf)
+            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_documento)
 
             with open(ruta_local, "wb") as f:
                 f.write(response.content)
 
             return ruta_local
 
-        else:
-            print(f"⚠ No se pudo descargar {nombre_pdf} desde Blob")
+        print(f"⚠ No se pudo descargar {nombre_documento} desde Blob")
 
     except Exception as e:
-        print(f"❌ Error descargando {nombre_pdf}: {e}")
+        print(f"❌ Error descargando {nombre_documento}: {e}")
 
     return None
 
@@ -111,28 +107,25 @@ def enviar_un_correo(
     ]
 
     documentos = d["documentos"]
-
     archivos_adjuntos = []
 
     if isinstance(documentos, str):
         documentos = [doc.strip() for doc in documentos.split(",") if doc.strip()]
 
-    documentos_unicos = list(set(documentos))
+    documentos_unicos = list(dict.fromkeys(documentos))
 
     for doc in documentos_unicos:
 
-        ruta_pdf = buscar_pdf_real(doc)
+        ruta_documento = buscar_documento_real(doc)
 
-        if not ruta_pdf:
+        if not ruta_documento:
+            print(f"⚠ Documento no encontrado en /tmp: {doc}, intentando descargar desde Blob")
+            ruta_documento = descargar_documento_desde_blob(doc)
 
-            print(f"⚠ PDF no encontrado en /tmp: {doc}, intentando descargar desde Blob")
-
-            ruta_pdf = descargar_pdf_desde_blob(doc)
-
-        if ruta_pdf:
-            archivos_adjuntos.append((ruta_pdf, doc))  # guardamos también el nombre original
+        if ruta_documento:
+            archivos_adjuntos.append((ruta_documento, doc))
         else:
-            print(f"❌ No se pudo obtener el PDF: {doc}")
+            print(f"❌ No se pudo obtener el documento: {doc}")
 
     try:
 
@@ -200,7 +193,6 @@ def procesar_circularizacion(
         for future in as_completed(futures):
 
             try:
-
                 resultado = future.result()
 
                 if resultado["error"]:
@@ -212,7 +204,6 @@ def procesar_circularizacion(
                 incrementar_enviados()
 
             except Exception as e:
-
                 print("❌ Error inesperado en worker:", e)
 
                 errores.append("Error inesperado")
@@ -245,7 +236,6 @@ Errores detectados: {len(errores)}
 """
 
     try:
-
         enviar_correo(
             email_remitente,
             password,
@@ -257,5 +247,4 @@ Errores detectados: {len(errores)}
         )
 
     except Exception as e:
-
         print("❌ Error enviando email resumen:", e)

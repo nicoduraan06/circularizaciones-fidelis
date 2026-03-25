@@ -12,7 +12,6 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
     msg["Subject"] = asunto
     msg["From"] = remitente
 
-    # permitir múltiples destinatarios separados por coma
     if isinstance(destinatario, str):
         destinatarios = [d.strip() for d in destinatario.split(",") if d.strip()]
     else:
@@ -20,7 +19,6 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
     msg["To"] = ", ".join(destinatarios)
 
-    # procesar CC
     cc_limpio = []
     if cc:
         if isinstance(cc, str):
@@ -31,12 +29,10 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
     msg.set_content(mensaje)
 
-    # adjuntar archivos
     for archivo in archivos:
 
         try:
 
-            # archivo puede venir como (ruta, nombre_original)
             if isinstance(archivo, tuple):
                 ruta_archivo, nombre_original = archivo
             else:
@@ -45,14 +41,10 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
             contenido = None
 
-            # leer archivo local
             if os.path.exists(ruta_archivo):
-
                 with open(ruta_archivo, "rb") as f:
                     contenido = f.read()
-
             else:
-                # fallback: descargar desde Blob
                 print(f"⬇ Descargando archivo desde Blob: {ruta_archivo}")
 
                 response = requests.get(ruta_archivo)
@@ -63,14 +55,12 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
                     print(f"⚠ No se pudo descargar el archivo: {ruta_archivo}")
                     continue
 
-            # 🔥 CLAVE: nombre EXACTO como en Excel
             nombre_archivo = urllib.parse.unquote(nombre_original)
 
-            # 🔥 CLAVE: detectar tipo automáticamente
             tipo, _ = mimetypes.guess_type(nombre_archivo)
 
-            if tipo:
-                maintype, subtype = tipo.split("/")
+            if tipo and "/" in tipo:
+                maintype, subtype = tipo.split("/", 1)
             else:
                 maintype, subtype = "application", "octet-stream"
 
@@ -84,7 +74,6 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
         except Exception as e:
             print(f"❌ Error adjuntando archivo {archivo}: {e}")
 
-    # lista real de destinatarios (TO + CC)
     destinatarios_envio = destinatarios + cc_limpio
 
     print("📧 Enviando correo")
@@ -93,10 +82,7 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
     print("Adjuntos:", archivos)
 
     try:
-
-        # conexión SMTP segura
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as smtp:
-
             smtp.starttls()
             smtp.login(remitente, password)
 
@@ -109,6 +95,5 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
         print("✅ Correo enviado correctamente")
 
     except Exception as e:
-
         print("❌ Error SMTP:", str(e))
         raise
