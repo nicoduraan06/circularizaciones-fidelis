@@ -1,12 +1,50 @@
 import pandas as pd
 
 
+def encontrar_fila_encabezados(df):
+
+    posibles_claves = [
+        "destinatario",
+        "empresa",
+        "cliente",
+        "proveedor",
+        "nombre",
+        "email",
+        "correo",
+        "documento",
+        "archivo",
+        "pdf"
+    ]
+
+    for i in range(len(df)):
+
+        fila = df.iloc[i].astype(str).str.lower().tolist()
+
+        coincidencias = sum(
+            any(clave in celda for celda in fila)
+            for clave in posibles_claves
+        )
+
+        # si encuentra varias coincidencias, es header
+        if coincidencias >= 2:
+            return i
+
+    return 0  # fallback
+
+
 def leer_excel(ruta_excel):
 
-    df = pd.read_excel(ruta_excel)
+    # leer sin header
+    df_raw = pd.read_excel(ruta_excel, header=None)
+
+    # detectar fila header real
+    fila_header = encontrar_fila_encabezados(df_raw)
+
+    # volver a leer con header correcto
+    df = pd.read_excel(ruta_excel, header=fila_header)
 
     # Normalizar columnas
-    df.columns = df.columns.str.strip().str.upper()
+    df.columns = df.columns.astype(str).str.strip().str.upper()
 
     columnas = list(df.columns)
 
@@ -76,6 +114,10 @@ def leer_excel(ruta_excel):
     destinatarios = []
 
     for _, fila in df.iterrows():
+
+        # ignorar filas completamente vacías
+        if fila.isna().all():
+            continue
 
         nombre = ""
         if col_destinatario and not pd.isna(fila[col_destinatario]):

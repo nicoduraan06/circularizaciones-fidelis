@@ -3,6 +3,7 @@ from email.message import EmailMessage
 import os
 import requests
 import urllib.parse
+import mimetypes
 
 
 def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, cc=None):
@@ -35,7 +36,7 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
         try:
 
-            # ahora archivo viene como (ruta, nombre_original)
+            # archivo puede venir como (ruta, nombre_original)
             if isinstance(archivo, tuple):
                 ruta_archivo, nombre_original = archivo
             else:
@@ -44,7 +45,7 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
 
             contenido = None
 
-            # intentar leer desde local
+            # leer archivo local
             if os.path.exists(ruta_archivo):
 
                 with open(ruta_archivo, "rb") as f:
@@ -62,13 +63,21 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
                     print(f"⚠ No se pudo descargar el archivo: {ruta_archivo}")
                     continue
 
-            # decodificar caracteres (%20 etc)
+            # 🔥 CLAVE: nombre EXACTO como en Excel
             nombre_archivo = urllib.parse.unquote(nombre_original)
+
+            # 🔥 CLAVE: detectar tipo automáticamente
+            tipo, _ = mimetypes.guess_type(nombre_archivo)
+
+            if tipo:
+                maintype, subtype = tipo.split("/")
+            else:
+                maintype, subtype = "application", "octet-stream"
 
             msg.add_attachment(
                 contenido,
-                maintype="application",
-                subtype="pdf",
+                maintype=maintype,
+                subtype=subtype,
                 filename=nombre_archivo
             )
 
