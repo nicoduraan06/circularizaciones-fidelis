@@ -33,6 +33,9 @@ app.add_middleware(
 
 templates = Jinja2Templates(directory="templates")
 
+# 🔥 DESACTIVAR CACHE (clave en Vercel)
+templates.env.cache = {}
+
 UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
