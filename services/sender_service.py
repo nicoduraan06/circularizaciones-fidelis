@@ -51,7 +51,7 @@ def buscar_documento_real(nombre_documento):
     for archivo in os.listdir(UPLOAD_FOLDER):
         archivo_normalizado = normalizar_nombre(archivo)
 
-        if nombre_normalizado in archivo_normalizado:
+        if nombre_normalizado == archivo_normalizado or nombre_normalizado in archivo_normalizado:
             return os.path.join(UPLOAD_FOLDER, archivo)
 
     return None
