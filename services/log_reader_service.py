@@ -1,5 +1,8 @@
 from database.db import SessionLocal
 from database.models import Circularizacion
+import pytz
+
+zona = pytz.timezone("Europe/Madrid")
 
 
 def leer_historial():
@@ -14,8 +17,11 @@ def leer_historial():
 
         for r in registros:
 
+            # 🔥 CONVERSIÓN A HORA LOCAL (ESPAÑA)
+            fecha_local = r.fecha.astimezone(zona)
+
             resultado.append({
-                "fecha": r.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+                "fecha": fecha_local.strftime("%Y-%m-%d %H:%M:%S"),
                 "excel": r.excel,
                 "correo": r.correo,
                 "destinatarios": r.destinatarios

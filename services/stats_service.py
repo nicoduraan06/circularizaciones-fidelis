@@ -1,5 +1,8 @@
 from database.db import SessionLocal
 from database.models import Circularizacion
+import pytz
+
+zona = pytz.timezone("Europe/Madrid")
 
 
 def obtener_estadisticas():
@@ -20,8 +23,11 @@ def obtener_estadisticas():
 
         for r in registros[-5:][::-1]:
 
+            # 🔥 CONVERSIÓN DE HORA A ESPAÑA
+            fecha_local = r.fecha.astimezone(zona)
+
             ultimos.append({
-                "fecha": r.fecha.strftime("%Y-%m-%d %H:%M:%S"),
+                "fecha": fecha_local.strftime("%Y-%m-%d %H:%M:%S"),
                 "excel": r.excel,
                 "remitente": r.correo,
                 "destinatarios": r.destinatarios
