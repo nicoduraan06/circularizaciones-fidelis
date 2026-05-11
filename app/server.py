@@ -35,7 +35,6 @@ from jinja2 import Environment, FileSystemLoader
 
 templates = Jinja2Templates(directory="templates")
 
-# 🔥 evitar problemas de cache en Vercel
 templates.env = Environment(
     loader=FileSystemLoader("templates"),
     auto_reload=True,
@@ -70,6 +69,41 @@ def descargar_blob_privado(url):
         f.write(r.content)
 
     return temp_path
+
+
+# ---------------------------------------------------------
+# BORRAR DOCUMENTOS DEL BLOB DESPUÉS DE ENVIAR
+# ---------------------------------------------------------
+
+def borrar_blobs(urls):
+    try:
+        token = os.getenv("BLOB_READ_WRITE_TOKEN")
+
+        response = requests.post(
+            "https://blob.vercel-storage.com/delete",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "x-api-version": "7"
+            },
+            json={"urls": urls}
+        )
+
+        print(f"🗑️ Blobs borrados: {urls} → {response.status_code}")
+
+    except Exception as e:
+        print(f"❌ Error borrando blobs: {e}")
+
+
+# ---------------------------------------------------------
+# TAREA DE FONDO: ENVIAR Y LUEGO BORRAR BLOBS
+# ---------------------------------------------------------
+
+def enviar_y_limpiar(destinatarios, email_remitente, password, asunto, mensaje, lista_cc, blob_urls):
+
+    procesar_circularizacion(destinatarios, email_remitente, password, asunto, mensaje, lista_cc)
+
+    borrar_blobs(blob_urls)
 
 
 # ---------------------------------------------------------
@@ -164,7 +198,7 @@ async def enviar_circularizacion(
     request: Request,
     background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
-    documentos_blob_json: str = Form(...),   # 🔥 CAMBIO CLAVE
+    documentos_blob_json: str = Form(...),
     asunto: str = Form(...),
     mensaje: str = Form(...),
     cc: str = Form("")
@@ -201,9 +235,12 @@ async def enviar_circularizacion(
         # -------------------------------
         documentos_blob = json.loads(documentos_blob_json)
 
+        blob_urls = []
+
         for doc in documentos_blob:
             doc_url = doc["url"]
             descargar_blob_privado(doc_url)
+            blob_urls.append(doc_url)
 
         # -------------------------------
         # LEER EXCEL
@@ -217,16 +254,17 @@ async def enviar_circularizacion(
         )
 
         # -------------------------------
-        # ENVÍO EN SEGUNDO PLANO
+        # ENVÍO EN SEGUNDO PLANO + LIMPIEZA
         # -------------------------------
         background_tasks.add_task(
-            procesar_circularizacion,
+            enviar_y_limpiar,
             destinatarios,
             email_remitente,
             password,
             asunto,
             mensaje,
-            lista_cc
+            lista_cc,
+            blob_urls
         )
 
         return templates.TemplateResponse(
