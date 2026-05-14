@@ -4,20 +4,22 @@
 
 <h1>Configurar correo</h1>
 
-<p>
-Introduce la contraseña de aplicación de tu correo para poder enviar circularizaciones.
-Solo se guardará durante esta sesión.
-</p>
+<div class="card" style="max-width:450px;">
 
-<form method="post" action="/configurar_smtp">
+  <p style="color:#666; margin-top:0;">
+    Introduce la contraseña de aplicación de tu correo para poder enviar circularizaciones.
+    Solo se guardará durante esta sesión.
+  </p>
 
-<label>Contraseña SMTP</label>
-<input type="password" name="smtp_password" required>
+  <form method="post" action="/configurar_smtp">
 
-<br><br>
+    <label style="font-weight:bold; color:#333;">Contraseña SMTP</label>
+    <input type="password" name="smtp_password" required placeholder="Introduce tu contraseña de aplicación">
 
-<button type="submit">Guardar</button>
+    <button type="submit" style="width:100%; margin-top:5px;">Guardar y continuar</button>
 
-</form>
+  </form>
+
+</div>
 
 {% endblock %}

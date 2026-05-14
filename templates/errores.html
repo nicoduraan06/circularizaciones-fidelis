@@ -4,18 +4,20 @@
 
 <h1>Correos que no se pudieron enviar</h1>
 
-<p>
+<p style="color:#666;">
 Estos correos no se enviaron correctamente durante la circularización.
 Puedes reenviarlos manualmente.
 </p>
 
-<br>
+<input
+  type="text"
+  id="buscador"
+  placeholder="Buscar correo..."
+  onkeyup="buscarErrores()"
+  style="width:300px; margin-bottom:20px;"
+>
 
-<input type="text" id="buscador" placeholder="Buscar correo..." onkeyup="buscarErrores()">
-
-<br><br>
-
-<table border="1" id="tablaErrores">
+<table>
 
 <tr>
     <th>Fecha</th>
@@ -25,20 +27,15 @@ Puedes reenviarlos manualmente.
 
 {% for e in errores %}
 
-<tr>
+<tr class="fila-hover">
     <td>{{ e.fecha }}</td>
     <td>{{ e.destinatario }}</td>
 
     <td>
-
         <form action="/reintentar" method="post">
-
             <input type="hidden" name="destinatario" value="{{ e.destinatario }}">
-
             <button type="submit">Reenviar</button>
-
         </form>
-
     </td>
 
 </tr>
@@ -47,6 +44,12 @@ Puedes reenviarlos manualmente.
 
 </table>
 
+<style>
+.fila-hover:hover td {
+background:#f3edf8;
+cursor:default;
+}
+</style>
 
 <script>
 
@@ -56,25 +59,15 @@ function buscarErrores(){
     let filtro = input.value.toLowerCase()
 
     let tabla = document.getElementById("tablaErrores")
-    let filas = tabla.getElementsByTagName("tr")
+    let filas = document.querySelectorAll(".fila-hover")
 
-    for(let i=1;i<filas.length;i++){
-
-        let correo = filas[i].getElementsByTagName("td")[1]
-
+    filas.forEach(function(fila){
+        let correo = fila.getElementsByTagName("td")[1]
         if(correo){
-
             let texto = correo.textContent.toLowerCase()
-
-            if(texto.indexOf(filtro) > -1){
-                filas[i].style.display = ""
-            }else{
-                filas[i].style.display = "none"
-            }
-
+            fila.style.display = texto.indexOf(filtro) > -1 ? "" : "none"
         }
-
-    }
+    })
 
 }
 

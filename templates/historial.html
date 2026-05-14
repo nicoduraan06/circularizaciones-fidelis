@@ -4,14 +4,14 @@
 
 <h1>Historial de Circularizaciones</h1>
 
-<form method="get" action="/historial" style="margin-bottom:20px;">
+<form method="get" action="/historial" style="margin-bottom:20px; display:flex; gap:10px; align-items:center;">
 
 <input
 type="text"
 name="buscar"
 placeholder="Buscar por fecha, Excel o remitente"
 value="{{ buscar if buscar else '' }}"
-style="padding:8px;width:300px;"
+style="width:300px; margin:0;"
 >
 
 <button type="submit">Buscar</button>
@@ -22,7 +22,7 @@ style="padding:8px;width:300px;"
 
 </form>
 
-<table border="1">
+<table>
 
 <tr>
 <th>Fecha</th>
@@ -33,7 +33,7 @@ style="padding:8px;width:300px;"
 
 {% for r in registros %}
 
-<tr>
+<tr class="fila-hover">
 <td>{{ r.fecha }}</td>
 <td>{{ r.excel }}</td>
 <td>{{ r.correo }}</td>
@@ -43,5 +43,12 @@ style="padding:8px;width:300px;"
 {% endfor %}
 
 </table>
+
+<style>
+.fila-hover:hover td {
+background:#f3edf8;
+cursor:default;
+}
+</style>
 
 {% endblock %}

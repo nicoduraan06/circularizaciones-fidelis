@@ -4,7 +4,7 @@
 
 <h1>Usuarios del sistema</h1>
 
-<table border="1">
+<table style="margin-bottom:40px;">
 
 <tr>
 <th>Usuario</th>
@@ -14,17 +14,15 @@
 
 {% for username, data in usuarios.items() %}
 
-<tr>
+<tr class="fila-hover">
 <td>{{ username }}</td>
 <td>{{ data.email }}</td>
 
 <td>
-
-<form action="/eliminar_usuario" method="post">
-<input type="hidden" name="username" value="{{ username }}">
-<button type="submit">Eliminar</button>
-</form>
-
+  <form action="/eliminar_usuario" method="post">
+    <input type="hidden" name="username" value="{{ username }}">
+    <button type="submit" style="background:#b30000;">Eliminar</button>
+  </form>
 </td>
 
 </tr>
@@ -33,23 +31,32 @@
 
 </table>
 
-<h2>Crear nuevo usuario</h2>
+<div class="card" style="max-width:450px;">
 
-<form action="/crear_usuario" method="post">
+  <h2 style="margin-top:0; color:#5b2c83;">Crear nuevo usuario</h2>
 
-<p>Usuario</p>
-<input type="text" name="username">
+  <form action="/crear_usuario" method="post">
 
-<p>Password</p>
-<input type="text" name="password">
+    <label style="font-weight:bold; color:#333;">Usuario</label>
+    <input type="text" name="username" placeholder="Nombre de usuario">
 
-<p>Email</p>
-<input type="email" name="email">
+    <label style="font-weight:bold; color:#333;">Contraseña</label>
+    <input type="text" name="password" placeholder="Contraseña">
 
-<br><br>
+    <label style="font-weight:bold; color:#333;">Email</label>
+    <input type="email" name="email" placeholder="correo@grupofidelis.es">
 
-<button type="submit">Crear usuario</button>
+    <button type="submit" style="width:100%; margin-top:5px;">Crear usuario</button>
 
-</form>
+  </form>
+
+</div>
+
+<style>
+.fila-hover:hover td {
+background:#f3edf8;
+cursor:default;
+}
+</style>
 
 {% endblock %}
