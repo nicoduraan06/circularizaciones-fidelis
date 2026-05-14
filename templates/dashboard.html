@@ -2,36 +2,27 @@
 
 {% block content %}
 
-<h1>Panel de Circularizaciones</h1>
+<h1>Estadísticas</h1>
 
-<h2>Estadísticas</h2>
+<div style="display:flex; gap:20px; margin-bottom:40px; flex-wrap:wrap;">
 
-<p><b>Total de circularizaciones:</b> {{ total_circularizaciones }}</p>
+  <div class="card" style="flex:1; min-width:200px; text-align:center; border-top:4px solid #5b2c83;">
+    <p style="font-size:48px; font-weight:bold; color:#5b2c83; margin:10px 0;">{{ total_circularizaciones }}</p>
+    <p style="color:#666; font-size:16px; margin:0;">Circularizaciones realizadas</p>
+  </div>
 
-<p><b>Total de destinatarios enviados:</b> {{ total_destinatarios }}</p>
+  <div class="card" style="flex:1; min-width:200px; text-align:center; border-top:4px solid #5b2c83;">
+    <p style="font-size:48px; font-weight:bold; color:#5b2c83; margin:10px 0;">{{ total_destinatarios }}</p>
+    <p style="color:#666; font-size:16px; margin:0;">Destinatarios contactados</p>
+  </div>
 
-<h2>Últimas circularizaciones</h2>
+</div>
 
-<table border="1">
-
-<tr>
-<th>Fecha</th>
-<th>Excel</th>
-<th>Remitente</th>
-<th>Destinatarios</th>
-</tr>
-
-{% for r in ultimos %}
-
-<tr>
-<td>{{ r.fecha }}</td>
-<td>{{ r.excel }}</td>
-<td>{{ r.remitente }}</td>
-<td>{{ r.destinatarios }}</td>
-</tr>
-
-{% endfor %}
-
-</table>
+<div class="card">
+  <p style="color:#666; font-size:14px; margin:0;">
+    Para consultar el detalle de cada circularización, accede al
+    <a href="/historial" style="color:#5b2c83; font-weight:bold;">Historial</a>.
+  </p>
+</div>
 
 {% endblock %}
