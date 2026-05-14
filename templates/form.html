@@ -53,7 +53,7 @@ que el indicado en el Excel.
 </p>
 
 <p>
-Se permiten archivos <strong>PDF y Excel</strong>.
+Se permiten archivos <strong>PDF y Excel</strong>. Tamaño máximo por archivo: <strong>10 MB</strong>.
 </p>
 
 </div>
@@ -64,6 +64,7 @@ Se permiten archivos <strong>PDF y Excel</strong>.
 </div>
 
 <p id="docsInfo" style="font-weight:bold;"></p>
+<p id="errorTamano" style="color:#b30000; font-weight:bold;"></p>
 
 <button type="button" onclick="toggleDocsList()">Ver / Ocultar lista de documentos</button>
 
@@ -165,6 +166,8 @@ text-align:center;
 
 <script>
 let docFiles = []
+const MAX_SIZE_MB = 10
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
 window.toggleDocsList = function(){
   const container = document.getElementById("docsContainer")
@@ -217,8 +220,21 @@ function setupDropZone(zoneId, listId){
 }
 
 function addDocFiles(files){
+  const errorEl = document.getElementById("errorTamano")
+  const archivosGrandes = []
+
   for(const file of files){
-    docFiles.push(file)
+    if(file.size > MAX_SIZE_BYTES){
+      archivosGrandes.push(file.name)
+    } else {
+      docFiles.push(file)
+    }
+  }
+
+  if(archivosGrandes.length > 0){
+    errorEl.innerText = "⚠ Los siguientes archivos superan el límite de " + MAX_SIZE_MB + " MB y no se han añadido: " + archivosGrandes.join(", ")
+  } else {
+    errorEl.innerText = ""
   }
 
   updateDocInput()
@@ -235,9 +251,10 @@ function renderDocList(){
   list.innerHTML = ""
 
   docFiles.forEach((file,index)=>{
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2)
     const li = document.createElement("li")
     li.innerHTML = `
-      ${file.name}
+      ${file.name} <span style="color:#999; font-size:12px;">(${sizeMB} MB)</span>
       <button onclick="removeDoc(${index})" style="margin-left:10px;">❌</button>
     `
     list.appendChild(li)
@@ -274,6 +291,7 @@ window.clearDocs = function(){
   const list = document.getElementById("docsList")
   list.innerHTML = ""
   document.getElementById("docsInfo").innerText = ""
+  document.getElementById("errorTamano").innerText = ""
 }
 
 async function analizarExcel(file){
@@ -318,7 +336,6 @@ window.enviarFormulario = async function(){
   const form = document.getElementById("formCircularizacion")
   const formData = new FormData(form)
 
-  // añadir los documentos directamente al FormData
   docFiles.forEach(file => {
     formData.append("documentos", file)
   })

@@ -4,31 +4,32 @@
 
 <h1>Circularización en progreso</h1>
 
-<div id="progresoContainer">
+<div id="progresoContainer" class="card" style="max-width:600px;">
 
-<p id="contador">Preparando envío...</p>
+  <p id="contador" style="color:#666; font-size:16px; margin-bottom:15px;">Preparando envío...</p>
 
-<div style="width:400px;border:1px solid black;height:30px">
+  <div style="width:100%; background:#f0e6f8; border-radius:20px; height:24px; overflow:hidden;">
+    <div id="barra" style="height:24px; width:0%; background:#5b2c83; border-radius:20px; transition:width 0.4s ease;"></div>
+  </div>
 
-    <div id="barra"
-         style="height:30px;width:0%;background-color:green">
-    </div>
-
-</div>
+  <p id="porcentaje" style="color:#5b2c83; font-weight:bold; margin-top:10px;">0%</p>
 
 </div>
 
-<div id="finalizado" style="display:none; text-align:center;">
+<div id="finalizado" style="display:none;">
 
-<h2>✅ Circularización finalizada</h2>
+  <div class="card" style="max-width:600px; text-align:center; border-top:4px solid #5b2c83;">
 
-<br>
+    <p style="font-size:48px; margin:0;">✅</p>
+    <h2 style="color:#5b2c83;">Circularización finalizada</h2>
 
-<div id="resumen"></div>
+    <div id="resumen" style="margin:20px 0;"></div>
 
-<br>
+    <a href="/">
+      <button>Volver al inicio</button>
+    </a>
 
-<a href="/">Volver al inicio</a>
+  </div>
 
 </div>
 
@@ -53,7 +54,7 @@ async function actualizarProgreso(){
         let porcentaje = Math.min((enviados / total) * 100, 100)
 
         document.getElementById("barra").style.width = porcentaje + "%"
-
+        document.getElementById("porcentaje").innerText = Math.round(porcentaje) + "%"
         document.getElementById("contador").innerText =
             enviados + " / " + total + " correos enviados"
 
@@ -65,19 +66,17 @@ async function actualizarProgreso(){
             let enviadosCorrectos = total - errores
 
             let resumenHTML = `
-            <p><b>Correos enviados correctamente:</b> ${enviadosCorrectos}</p>
-            <p><b>Errores detectados:</b> ${errores}</p>
+              <p style="font-size:18px;"><b>Correos enviados correctamente:</b> <span style="color:#5b2c83;">${enviadosCorrectos}</span></p>
+              <p style="font-size:18px;"><b>Errores detectados:</b> <span style="color:${errores > 0 ? '#b30000' : '#5b2c83'};">${errores}</span></p>
             `
 
             if(errores > 0){
-
                 resumenHTML += `
-                <p style="color:#b30000">
+                <p style="color:#b30000; margin-top:10px;">
                 Algunos correos no se pudieron enviar.<br>
                 Dirígete al apartado <b>Errores</b> para intentar reenviarlos.
                 </p>
                 `
-
             }
 
             document.getElementById("resumen").innerHTML = resumenHTML
