@@ -8,7 +8,7 @@ The system is designed to handle large batches of emails efficiently while provi
 
 ---
 
-# Overview
+## Overview
 
 Circularizaciones Fidelis is a web application built with **FastAPI** that automates the process of sending circularization emails.
 
@@ -28,298 +28,252 @@ The system then:
 
 ---
 
-# Main Features
+## Main Features
 
-## Excel-driven email sending
+### Excel-driven email sending
 
 - Reads recipient data from Excel
-- Supports flexible column formats
+- Supports flexible column formats and header detection
 - Allows **multiple recipients per row**
 - Automatically matches documents with their corresponding PDF
 
----
-
-## Automated PDF matching
+### Automated PDF matching
 
 The system automatically finds the correct PDF file even if:
 
-- filenames contain spaces
-- filenames contain accents
-- filenames contain URL encoding characters
+- Filenames contain spaces
+- Filenames contain accents or special characters
+- Filenames contain URL-encoded characters
 
-The system normalizes filenames to ensure reliable attachment matching.
+Filenames are normalized to ensure reliable attachment matching regardless of formatting.
 
----
-
-## Direct file upload
+### Direct file upload
 
 PDFs are uploaded directly to the server and stored temporarily in `/tmp` during processing.
 
-Benefits:
+- No external storage dependencies
+- No operation limits
+- Simpler and faster workflow
 
-- no external storage dependencies
-- no operation limits
-- simpler and faster workflow
-
----
-
-## Parallel email sending
+### Parallel email sending
 
 Emails are sent using **ThreadPoolExecutor**, allowing parallel processing.
 
-Benefits:
+- Faster circularizations
+- Reduced total sending time
+- Improved reliability for large batches
 
-- faster circularizations
-- reduced total sending time
-- improved reliability
-
----
-
-## Real-time progress tracking
+### Real-time progress tracking
 
 Users can monitor circularization progress directly from the interface.
 
-The system shows:
+The system displays:
 
-- number of processed emails
-- number of successful deliveries
-- number of errors
+- Number of emails processed
+- Number of successful deliveries
+- Number of errors
 
----
-
-## Delivery evidence report
+### Delivery evidence report
 
 After each circularization the sender automatically receives a summary email containing:
 
-- successfully delivered emails
-- failed emails
-- total recipients processed
+- Successfully delivered emails
+- Failed emails
+- Total recipients processed
 
 This provides **delivery evidence for audit purposes**.
 
----
-
-## Error tracking system
+### Error tracking system
 
 All delivery errors are recorded in the system.
 
 Users can review:
 
-- failed emails
-- error messages
-- delivery history
+- Failed emails
+- Error messages
+- Full delivery history
+
+### User authentication and roles
+
+The application includes a login system with role-based access control.
+
+| Role | Permissions |
+|------|-------------|
+| Admin | Full access including user management |
+| User | Send circularizations, view history and errors |
 
 ---
 
-## User authentication and roles
+## Architecture
 
-The application includes a login system with role-based access.
-
-Roles:
-
-- **Admin**
-- **User**
-
-Admins can manage users and access administrative panels.
-
----
-
-# Architecture
-
-The system is built using the following stack:
-
-Frontend  
-HTML / CSS / JavaScript
-
-Backend  
-FastAPI (Python)
-
-Email sending  
-SMTP (Gmail)
-
-File storage  
-/tmp (serverless temporary storage)
-
-Database  
-Neon PostgreSQL
-
-ORM  
-SQLAlchemy
-
-Deployment  
-Vercel Serverless
+| Layer | Technology |
+|-------|------------|
+| Frontend | HTML / CSS / JavaScript |
+| Backend | FastAPI (Python) |
+| Email sending | SMTP (Gmail) |
+| File storage | `/tmp` (serverless temporary storage) |
+| Database | Neon PostgreSQL |
+| ORM | SQLAlchemy |
+| Deployment | Vercel Serverless |
 
 ---
 
-# Email Sending Workflow
+## Email Sending Workflow
 
+```
 1. User logs in
-2. User uploads Excel file
-3. User uploads PDF documents
-4. Excel file is parsed
-5. Each row is matched with the corresponding PDF
-6. Emails are sent in parallel
-7. Progress is displayed in real time
-8. Sender receives a delivery summary report
+2. User uploads Excel file and PDF documents
+3. Excel file is parsed and recipients are extracted
+4. Each recipient is matched with the corresponding PDF
+5. Emails are sent in parallel via SMTP
+6. Progress is displayed in real time
+7. Sender receives a delivery summary report
+```
 
 ---
 
-# Database Schema
+## Database Schema
 
-## usuarios
-
+### usuarios
 Stores application users.
 
-Fields:
+| Field | Type |
+|-------|------|
+| id | Integer (PK) |
+| username | String |
+| password | String |
+| email | String |
+| role | String |
 
-- id
-- username
-- password
-- email
-- role
-
----
-
-## circularizaciones
-
+### circularizaciones
 Stores circularization history.
 
-Fields:
+| Field | Type |
+|-------|------|
+| id | Integer (PK) |
+| fecha | DateTime |
+| excel | String |
+| correo | String |
+| destinatarios | Integer |
 
-- id
-- fecha
-- excel
-- correo
-- destinatarios
-
----
-
-## errores_envio
-
+### errores_envio
 Stores email delivery errors.
 
-Fields:
-
-- id
-- fecha
-- destinatario
-- error
-
----
-
-# Environment Variables
-
-The application requires the following environment variables:
-
-```
-DATABASE_URL
-```
-
-SMTP credentials are provided by the user during login.
+| Field | Type |
+|-------|------|
+| id | Integer (PK) |
+| fecha | DateTime |
+| destinatario | String |
+| error | String |
 
 ---
 
-# Deployment
+## Environment Variables
 
-The application is deployed using **Vercel serverless functions**.
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string (Neon) |
 
-Special adaptations were implemented to support the serverless environment:
-
-- temporary files stored in `/tmp`
-- compatibility with read-only filesystem
-- asynchronous background tasks
+> SMTP credentials are entered by the user at login and stored only for the duration of the session.
 
 ---
 
-# Project Structure
+## Deployment
+
+The application is deployed using **Vercel Serverless Functions**.
+
+Adaptations implemented for the serverless environment:
+
+- Temporary files stored in `/tmp`
+- Compatibility with read-only filesystem
+- Asynchronous background tasks for email sending
+
+---
+
+## Project Structure
 
 ```
 circularizaciones-fidelis/
 
 api/
-    blob-upload.js
-    index.py
+    index.py                  # Vercel serverless entry point
 
 app/
-    excel_reader.py
-    mailer.py
-    server.py
+    excel_reader.py           # Excel parsing and recipient extraction
+    mailer.py                 # SMTP email sending
+    server.py                 # FastAPI routes and application logic
 
 config/
-    users.json
+    users.json                # Legacy user config (replaced by database)
 
 database/
-    db.py
-    models.py
+    db.py                     # SQLAlchemy engine and session
+    models.py                 # Database models and initial admin setup
 
 services/
-    auth_service.py
-    error_logger_service.py
-    error_reader_service.py
-    log_reader_service.py
-    logger_service.py
-    progress_service.py
-    sender_service.py
-    stats_service.py
-    user_service.py
+    auth_service.py           # User authentication
+    error_logger_service.py   # Error logging to CSV
+    error_reader_service.py   # Error reading from CSV
+    log_reader_service.py     # Circularization history reading
+    logger_service.py         # Circularization history writing
+    progress_service.py       # Real-time progress tracking
+    sender_service.py         # Email sending orchestration
+    stats_service.py          # Statistics calculation
+    user_service.py           # User management
 
 templates/
-    admin.html
-    base.html
-    configurar_smtp.html
-    dashboard.html
-    errores.html
-    form.html
-    historial.html
-    login.html
-    resultado.html
-    usuarios.html
+    admin.html                # Admin panel
+    base.html                 # Base layout
+    configurar_smtp.html      # SMTP configuration
+    dashboard.html            # Statistics dashboard
+    errores.html              # Error tracking
+    form.html                 # New circularization form
+    historial.html            # Circularization history
+    login.html                # Login page
+    resultado.html            # Progress and result page
+    usuarios.html             # User management
 
 static/
     css/
-        style.css
+        style.css             # Global styles
     images/
-        logo-fidelis.png
+        logo-fidelis.png      # Company logo
+        iconito_fidelis.png   # Favicon
 
-logs/
-    circularizaciones.log
-    errores_envio.csv
-
-main.py
-requirements.txt
-package.json
-vercel.json
+main.py                       # PyCharm entry point (not used in production)
+requirements.txt              # Python dependencies
+package.json                  # Node dependencies
+vercel.json                   # Vercel deployment configuration
 .gitignore
 ```
 
 ---
 
-# Reliability Improvements
+## Reliability Improvements
 
 Several mechanisms ensure stable circularizations:
 
-- filename normalization for PDF matching
-- parallel email sending
-- SQLAlchemy connection health checks
-- delivery summary reporting
+- Filename normalization for robust PDF matching
+- Parallel email sending with ThreadPoolExecutor
+- SQLAlchemy connection health checks (`pool_pre_ping`)
+- Automatic connection recycling (`pool_recycle`)
+- Delivery summary report sent to the sender after each circularization
 
 ---
 
-# Future Improvements
+## Future Improvements
 
-Possible future enhancements include:
-
-- automatic retry system for failed emails
+- Automatic retry system for failed emails
 - PDF preview before sending
-- advanced analytics dashboard
-- email template editor
-- exportable audit reports
-- circularization scheduling
+- Advanced analytics dashboard
+- Email template editor
+- Exportable audit reports
+- Circularization scheduling
 
 ---
 
-# Author
+## Author
 
 Developed by **Nicolás Durán**
 
-This project was created to automate internal circularization processes and improve efficiency in audit-related workflows.
+This project was created to automate internal circularization processes and improve efficiency in audit-related workflows at **Grupo Fidelis**.
