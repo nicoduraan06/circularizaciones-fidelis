@@ -17,7 +17,7 @@ Puedes reenviarlos manualmente.
   style="width:300px; margin-bottom:20px;"
 >
 
-<table>
+<table id="tablaErrores">
 
 <tr>
     <th>Fecha</th>
@@ -58,7 +58,6 @@ function buscarErrores(){
     let input = document.getElementById("buscador")
     let filtro = input.value.toLowerCase()
 
-    let tabla = document.getElementById("tablaErrores")
     let filas = document.querySelectorAll(".fila-hover")
 
     filas.forEach(function(fila){

@@ -21,11 +21,10 @@ The system then:
 
 1. Parses the Excel file
 2. Matches each row with the corresponding PDF
-3. Uploads PDFs to **Vercel Blob Storage**
-4. Sends emails in parallel using SMTP
-5. Tracks progress in real time
-6. Stores circularization history in a PostgreSQL database
-7. Sends a **delivery report to the sender**
+3. Sends emails in parallel using SMTP
+4. Tracks progress in real time
+5. Stores circularization history in a PostgreSQL database
+6. Sends a **delivery report to the sender**
 
 ---
 
@@ -44,7 +43,6 @@ The system then:
 
 The system automatically finds the correct PDF file even if:
 
-- Vercel Blob adds random suffixes
 - filenames contain spaces
 - filenames contain accents
 - filenames contain URL encoding characters
@@ -53,15 +51,15 @@ The system normalizes filenames to ensure reliable attachment matching.
 
 ---
 
-## Large circularization support
+## Direct file upload
 
-To avoid serverless limitations, uploaded PDFs are stored in **Vercel Blob Storage**.
+PDFs are uploaded directly to the server and stored temporarily in `/tmp` during processing.
 
 Benefits:
 
-- bypass serverless payload limits
-- handle large document batches
-- scalable attachment storage
+- no external storage dependencies
+- no operation limits
+- simpler and faster workflow
 
 ---
 
@@ -140,7 +138,7 @@ Email sending
 SMTP (Gmail)
 
 File storage  
-Vercel Blob Storage
+/tmp (serverless temporary storage)
 
 Database  
 Neon PostgreSQL
@@ -158,12 +156,11 @@ Vercel Serverless
 1. User logs in
 2. User uploads Excel file
 3. User uploads PDF documents
-4. PDFs are uploaded to **Vercel Blob Storage**
-5. Excel file is parsed
-6. Each row is matched with the corresponding PDF
-7. Emails are sent in parallel
-8. Progress is displayed in real time
-9. Sender receives a delivery summary report
+4. Excel file is parsed
+5. Each row is matched with the corresponding PDF
+6. Emails are sent in parallel
+7. Progress is displayed in real time
+8. Sender receives a delivery summary report
 
 ---
 
@@ -216,7 +213,6 @@ The application requires the following environment variables:
 
 ```
 DATABASE_URL
-BLOB_PUBLIC_URL
 ```
 
 SMTP credentials are provided by the user during login.
@@ -231,7 +227,6 @@ Special adaptations were implemented to support the serverless environment:
 
 - temporary files stored in `/tmp`
 - compatibility with read-only filesystem
-- Blob storage for large files
 - asynchronous background tasks
 
 ---
@@ -290,11 +285,6 @@ logs/
     circularizaciones.log
     errores_envio.csv
 
-uploads/
-    Excel de prueba real.xlsx
-    prueba1.pdf
-    prueba2.pdf
-
 main.py
 requirements.txt
 package.json
@@ -309,12 +299,9 @@ vercel.json
 Several mechanisms ensure stable circularizations:
 
 - filename normalization for PDF matching
-- automatic download of missing files from Blob storage
 - parallel email sending
 - SQLAlchemy connection health checks
 - delivery summary reporting
-
-These improvements allow the system to handle large circularizations reliably.
 
 ---
 

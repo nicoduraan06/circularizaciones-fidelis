@@ -5,9 +5,7 @@ jinja2
 python-multipart
 itsdangerous
 openpyxl
-flask
 psycopg[binary]
 sqlalchemy
 psycopg2-binary
-requests
 pytz

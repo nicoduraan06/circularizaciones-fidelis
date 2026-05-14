@@ -1,6 +1,3 @@
-from database.db import SessionLocal
-from database.models import Circularizacion
-
 estado_envio = {
     "total": 0,
     "enviados": 0,

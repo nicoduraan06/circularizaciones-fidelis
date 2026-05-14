@@ -1,9 +1,8 @@
 import smtplib
 from email.message import EmailMessage
 import os
-import requests
-import urllib.parse
 import mimetypes
+import urllib.parse
 
 
 def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, cc=None):
@@ -39,21 +38,12 @@ def enviar_correo(remitente, password, destinatario, asunto, mensaje, archivos, 
                 ruta_archivo = archivo
                 nombre_original = os.path.basename(archivo)
 
-            contenido = None
+            if not os.path.exists(ruta_archivo):
+                print(f"⚠ Archivo no encontrado: {ruta_archivo}")
+                continue
 
-            if os.path.exists(ruta_archivo):
-                with open(ruta_archivo, "rb") as f:
-                    contenido = f.read()
-            else:
-                print(f"⬇ Descargando archivo desde Blob: {ruta_archivo}")
-
-                response = requests.get(ruta_archivo)
-
-                if response.status_code == 200:
-                    contenido = response.content
-                else:
-                    print(f"⚠ No se pudo descargar el archivo: {ruta_archivo}")
-                    continue
+            with open(ruta_archivo, "rb") as f:
+                contenido = f.read()
 
             nombre_archivo = urllib.parse.unquote(nombre_original)
 
