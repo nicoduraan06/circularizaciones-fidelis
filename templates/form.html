@@ -96,8 +96,6 @@ Muchas gracias por su colaboración.</textarea>
 <input type="text" name="cc" placeholder="correo1@empresa.com, correo2@empresa.com">
 </p>
 
-<input type="hidden" name="documentos_blob_json" id="documentos_blob_json">
-
 <button type="button" onclick="confirmarEnvio()">Enviar circularización</button>
 
 </form>
@@ -165,9 +163,7 @@ text-align:center;
 }
 </style>
 
-<script type="module">
-import { upload } from "https://esm.sh/@vercel/blob/client"
-
+<script>
 let docFiles = []
 
 window.toggleDocsList = function(){
@@ -316,34 +312,30 @@ window.cerrarModal = function(){
   document.getElementById("confirmModal").style.display = "none"
 }
 
-async function subirDocumentosABlob(){
-  const uploads = docFiles.map(async (file) => {
-
-    const blob = await upload(file.name, file, {
-      access: "private",
-      handleUploadUrl: "/api/blob-upload",
-      allowOverwrite: true
-    })
-
-    return {
-      nombre: file.name,
-      url: blob.url,
-      pathname: blob.pathname
-    }
-  })
-
-  return await Promise.all(uploads)
-}
-
 window.enviarFormulario = async function(){
   document.getElementById("confirmModal").style.display = "none"
 
-  const docsBlob = await subirDocumentosABlob()
+  const form = document.getElementById("formCircularizacion")
+  const formData = new FormData(form)
 
-  document.getElementById("documentos_blob_json").value =
-    JSON.stringify(docsBlob)
+  // añadir los documentos directamente al FormData
+  docFiles.forEach(file => {
+    formData.append("documentos", file)
+  })
 
-  document.getElementById("formCircularizacion").submit()
+  const response = await fetch("/enviar", {
+    method: "POST",
+    body: formData
+  })
+
+  if(response.redirected){
+    window.location.href = response.url
+  } else {
+    const html = await response.text()
+    document.open()
+    document.write(html)
+    document.close()
+  }
 }
 </script>
 

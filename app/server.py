@@ -12,9 +12,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from services.auth_service import autenticar_usuario
 from services.user_service import obtener_usuarios, crear_usuario, eliminar_usuario
 from fastapi.staticfiles import StaticFiles
+from typing import List
 import os
-import json
-import requests
 
 from database.db import engine
 from database.models import Base, crear_admin_inicial
@@ -43,67 +42,6 @@ templates.env = Environment(
 
 UPLOAD_FOLDER = "/tmp/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-
-# ---------------------------------------------------------
-# DESCARGAR DOCUMENTO DESDE BLOB
-# ---------------------------------------------------------
-
-def descargar_blob_privado(url):
-
-    token = os.getenv("BLOB_READ_WRITE_TOKEN")
-
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-    r = requests.get(url, headers=headers)
-
-    if r.status_code != 200:
-        raise Exception("No se pudo descargar el archivo desde Blob")
-
-    filename = url.split("/")[-1]
-    temp_path = os.path.join(UPLOAD_FOLDER, filename)
-
-    with open(temp_path, "wb") as f:
-        f.write(r.content)
-
-    return temp_path
-
-
-# ---------------------------------------------------------
-# BORRAR DOCUMENTOS DEL BLOB DESPUÉS DE ENVIAR
-# ---------------------------------------------------------
-
-def borrar_blobs(urls):
-    try:
-        token = os.getenv("BLOB_READ_WRITE_TOKEN")
-
-        response = requests.post(
-            "https://blob.vercel-storage.com/delete",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-                "x-api-version": "7"
-            },
-            json={"urls": urls}
-        )
-
-        print(f"🗑️ Blobs borrados: {urls} → {response.status_code}")
-
-    except Exception as e:
-        print(f"❌ Error borrando blobs: {e}")
-
-
-# ---------------------------------------------------------
-# TAREA DE FONDO: ENVIAR Y LUEGO BORRAR BLOBS
-# ---------------------------------------------------------
-
-def enviar_y_limpiar(destinatarios, email_remitente, password, asunto, mensaje, lista_cc, blob_urls):
-
-    procesar_circularizacion(destinatarios, email_remitente, password, asunto, mensaje, lista_cc)
-
-    borrar_blobs(blob_urls)
 
 
 # ---------------------------------------------------------
@@ -198,7 +136,7 @@ async def enviar_circularizacion(
     request: Request,
     background_tasks: BackgroundTasks,
     excel_file: UploadFile = File(...),
-    documentos_blob_json: str = Form(...),
+    documentos: List[UploadFile] = File(default=[]),
     asunto: str = Form(...),
     mensaje: str = Form(...),
     cc: str = Form("")
@@ -231,16 +169,14 @@ async def enviar_circularizacion(
             f.write(await excel_file.read())
 
         # -------------------------------
-        # PROCESAR DOCUMENTOS
+        # GUARDAR DOCUMENTOS EN /tmp
         # -------------------------------
-        documentos_blob = json.loads(documentos_blob_json)
+        for doc in documentos:
+            doc_filename = os.path.basename(doc.filename)
+            doc_path = os.path.join(UPLOAD_FOLDER, doc_filename)
 
-        blob_urls = []
-
-        for doc in documentos_blob:
-            doc_url = doc["url"]
-            descargar_blob_privado(doc_url)
-            blob_urls.append(doc_url)
+            with open(doc_path, "wb") as f:
+                f.write(await doc.read())
 
         # -------------------------------
         # LEER EXCEL
@@ -254,17 +190,16 @@ async def enviar_circularizacion(
         )
 
         # -------------------------------
-        # ENVÍO EN SEGUNDO PLANO + LIMPIEZA
+        # ENVÍO EN SEGUNDO PLANO
         # -------------------------------
         background_tasks.add_task(
-            enviar_y_limpiar,
+            procesar_circularizacion,
             destinatarios,
             email_remitente,
             password,
             asunto,
             mensaje,
-            lista_cc,
-            blob_urls
+            lista_cc
         )
 
         return templates.TemplateResponse(

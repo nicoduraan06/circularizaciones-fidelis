@@ -2,10 +2,6 @@
   "buildCommand": "npm install",
   "routes": [
     {
-      "src": "^/api/blob-upload$",
-      "dest": "/api/blob-upload.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "api/index.py"
     }

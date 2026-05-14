@@ -1,5 +1,4 @@
 import os
-import requests
 import urllib.parse
 import unicodedata
 import re
@@ -36,7 +35,6 @@ def normalizar_nombre(nombre):
 def buscar_documento_real(nombre_documento):
     """
     Busca el archivo real en /tmp/uploads incluso si:
-    - tiene sufijo aleatorio de Blob
     - tiene espacios
     - tiene caracteres especiales
     - tiene nombres muy largos
@@ -53,40 +51,6 @@ def buscar_documento_real(nombre_documento):
 
         if nombre_normalizado == archivo_normalizado or nombre_normalizado in archivo_normalizado:
             return os.path.join(UPLOAD_FOLDER, archivo)
-
-    return None
-
-
-def descargar_documento_desde_blob(nombre_documento):
-    """
-    Si el archivo no está en /tmp, intenta descargarlo desde Blob.
-    """
-
-    try:
-        base_blob_url = os.getenv("BLOB_PUBLIC_URL")
-
-        if not base_blob_url:
-            return None
-
-        url = f"{base_blob_url}/{nombre_documento}"
-
-        response = requests.get(url, timeout=20)
-
-        if response.status_code == 200:
-
-            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-            ruta_local = os.path.join(UPLOAD_FOLDER, nombre_documento)
-
-            with open(ruta_local, "wb") as f:
-                f.write(response.content)
-
-            return ruta_local
-
-        print(f"⚠ No se pudo descargar {nombre_documento} desde Blob")
-
-    except Exception as e:
-        print(f"❌ Error descargando {nombre_documento}: {e}")
 
     return None
 
@@ -117,10 +81,6 @@ def enviar_un_correo(
     for doc in documentos_unicos:
 
         ruta_documento = buscar_documento_real(doc)
-
-        if not ruta_documento:
-            print(f"⚠ Documento no encontrado en /tmp: {doc}, intentando descargar desde Blob")
-            ruta_documento = descargar_documento_desde_blob(doc)
 
         if ruta_documento:
             archivos_adjuntos.append((ruta_documento, doc))
